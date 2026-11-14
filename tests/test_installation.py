@@ -43,7 +43,7 @@ async def test_clean_source_install_stdio_discovery_and_external_state(tmp_path)
     with zipfile.ZipFile(wheel) as archive:
         assert all(
             n.startswith(
-                ("zhenzhen_seedance_video/", "zhenzhen_seedancevideo_mcp-0.1.0.dev0.dist-info/")
+                ("zhenzhen_seedance_video/", "zhenzhen_seedancevideo_mcp-0.1.0.dev1.dist-info/")
             )
             for n in archive.namelist()
         )
@@ -79,7 +79,7 @@ async def test_clean_source_install_stdio_discovery_and_external_state(tmp_path)
         ],
         env=environment,
     )
-    assert version.strip() == "0.1.0.dev0"
+    assert version.strip() == "0.1.0.dev1"
     python = project / ".venv/Scripts/python.exe"
     location = await command(
         [

@@ -1,6 +1,6 @@
 # Agent 工具使用手册
 
-适用版本：0.1.0.dev0，MCP SDK 2.3.0，Windows。
+适用版本：0.1.0.dev1，MCP SDK 2.3.0，Windows。
 当前发行入口已接通供应商适配器，默认 execution_mode=local 不执行供应商请求，显式配置 provider 并重启才启用。实际 Host 工具发现及 Codex／DSH 跨 Host 主视频交付已有分范围证据，详见[验证记录](verification-add-local-video-generation-service.md)；不能把这些证据推广为全部模型、Host 或完整产物集合均已验收。
 
 ## 启动与配置
