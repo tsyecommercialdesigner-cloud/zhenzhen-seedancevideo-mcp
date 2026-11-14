@@ -9,7 +9,43 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.scope.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: scope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -n "$BASE_SHA" ] && [ -n "$HEAD_SHA" ] && ! git diff --name-only "$BASE_SHA...$HEAD_SHA" | grep -Eiv '\.(md|txt)$'; then
+            echo 'docs_only=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'docs_only=false' >> "$GITHUB_OUTPUT"
+          fi
+  documentation:
+    needs: changes
+    if: github.event_name == 'pull_request' && github.base_ref == 'dev' && needs.changes.outputs.docs_only == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check diff formatting and secrets
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --check "$BASE_SHA...$HEAD_SHA"
+          if git diff --no-color "$BASE_SHA...$HEAD_SHA" | grep -Ei '^\+.*(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9_-]{24,})'; then exit 1; fi
   windows:
+    needs: changes
+    if: github.event_name != 'pull_request' || github.base_ref == 'main' || needs.changes.outputs.docs_only != 'true'
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
