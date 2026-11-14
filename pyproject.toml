@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "zhenzhen-seedancevideo-mcp"
+version = "0.1.0.dev0"
+description = "Windows shared local video task service for MCP agents"
+requires-python = "==3.12.14"
+dependencies = [
+  "mcp==2.3.0",
+  "httpx2==2.16.0",
+  "pywin32>=311; sys_platform == 'win32'",
+  "python-dotenv>=1.0,<2",
+]
+
+[project.scripts]
+zhenzhen-seedance-video = "zhenzhen_seedance_video.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/zhenzhen_seedance_video"]
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src", "docs", "pyproject.toml", "uv.lock", ".python-version", "README.md", "MANUAL.md", ".env.example"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+
+[[tool.uv.index]]
+url = "https://pypi.org/simple"
+default = true
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.5.0",
+    "ruff>=0.17.5",
+]

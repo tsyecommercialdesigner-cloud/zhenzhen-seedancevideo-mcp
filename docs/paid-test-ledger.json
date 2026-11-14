@@ -1,0 +1,164 @@
+{
+  "authorization_limit": 18,
+  "counting_rule": "Lifetime ledger retained; new window starts after 8 historical submissions, previous 2 remaining plus 8 added = 10 available; uncertain POST intents consume budget",
+  "paid_submission_count": 14,
+  "remaining_maximum": 4,
+  "observed_total_same_currency": "47.823040",
+  "currency": "¥",
+  "entries": [
+    {
+      "ordinal": 1,
+      "model": "seedance-2.0-mini-t2v",
+      "intent_sha256": "7bb96ed102474e3a6624219d531723c9ed94b167561d88c4f87d598dda2bac2f",
+      "amount": "0.8028",
+      "currency": "¥",
+      "status": "SUCCESS"
+    },
+    {
+      "ordinal": 2,
+      "model": "seedance-2.0-mini-t2v",
+      "intent_sha256": "a111fbeac2bd4463f510cc9056bda9ac7c5fe640f35b5ccfde853405db2b5694",
+      "amount": "0.8028",
+      "currency": "¥",
+      "status": "SUCCESS"
+    },
+    {
+      "ordinal": 3,
+      "model": "zhenzhen-upscaler",
+      "intent_sha256": "924e189eb4bafc767da09358e70ae921912c665f700abed6d5018722919439c6",
+      "amount": "0.875",
+      "currency": "¥",
+      "status": "SUCCESS"
+    },
+    {
+      "ordinal": 4,
+      "model": "seedance-2.5-standard-t2v",
+      "intent_sha256": "e8dfd6fb1ee00476b58d5be6834ac2315919fc9a33cec10634f57fad39796241",
+      "amount": "2.688892",
+      "currency": "¥",
+      "status": "SUCCESS"
+    },
+    {
+      "ordinal": 5,
+      "model": "zhenzhen-upscaler",
+      "intent_sha256": "5d75e6e81e212938fa577d9fc97775841736aa0bad3077e90874de339f78693d",
+      "amount": "0.875",
+      "currency": "¥",
+      "status": "SUCCESS",
+      "purpose": "13.6 unified queue MCP acceptance; existing MP4, 720p"
+    },
+    {
+      "ordinal": 6,
+      "model": "seedance-2.0-mini-i2v",
+      "intent_sha256": "951fe1f032c2f7cd08af99344b209a887f4714135b1893fe6d48adfbaa1b9bc2",
+      "amount": "0.8028",
+      "currency": "¥",
+      "status": "SUCCESS",
+      "purpose": "13.5 regular unified queue acceptance"
+    },
+    {
+      "ordinal": 7,
+      "model": "seedance-2.5-standard-t2v",
+      "intent_sha256": "b8304b0ff207573ac96bbb82143531f445a4ac3f25434887c8a608ff3abd8421",
+      "amount": "2.688892",
+      "currency": "¥",
+      "status": "SUCCESS",
+      "purpose": "13.5 draft unified queue acceptance"
+    },
+    {
+      "ordinal": 8,
+      "model": "seedance-2.5-standard-draft-to-video",
+      "intent_sha256": "10594dc2d0896f11e9f554185222721c6cdcd689f0c5d237f56594f54f4d78a6",
+      "amount": "14.224814",
+      "currency": "¥",
+      "status": "SUCCESS",
+      "purpose": "13.5 final unified queue acceptance"
+    },
+    {
+      "ordinal": 9,
+      "model": "seedance-2.5-global-standard-t2v",
+      "intent_sha256": "2cf81856615a319d17703bcfd4492ca6bec2e065af97dde8032c96a943a4026e",
+      "amount": "2.877682",
+      "currency": "¥",
+      "status": "SUCCESS",
+      "purpose": "13.4 global draft unified queue acceptance"
+    },
+    {
+      "ordinal": 10,
+      "model": "seedance-2.5-global-standard-draft-to-video",
+      "intent_sha256": "21a41eb774d385b8e2a0845bc3be94721b5d8a6646bb996251ab4f111b0793b2",
+      "amount": "15.933802",
+      "currency": "¥",
+      "status": "SUCCESS",
+      "purpose": "13.4 global final unified queue acceptance"
+    },
+    {
+      "ordinal": 11,
+      "model": "seedance-2.0-global-fast-i2v",
+      "intent_sha256": "9b76f0e52de284ae6cd5c4ea02d005ddd632e49b842a6ea0be28e6d36df556e5",
+      "amount": "1.504578",
+      "currency": "¥",
+      "status": "SUCCESS",
+      "purpose": "13.4 Fast/Standard fast unified queue acceptance"
+    },
+    {
+      "ordinal": 12,
+      "model": "seedance-2.0-standard-multi",
+      "intent_sha256": "0c51b271c8b959c3edf0d44e9097af25c84d7e6f4d553907d330c9ccf8b518a6",
+      "amount": "2.14038",
+      "currency": "¥",
+      "status": "SUCCESS",
+      "purpose": "13.4 Fast/Standard multi unified queue acceptance"
+    },
+    {
+      "ordinal": 13,
+      "model": "seedance-2.0-mini-t2v",
+      "intent_sha256": "0c88c215486c6b1abd6a9718326f95b0a50b22b5415ece599570d91c371cc7af",
+      "amount": "0.8028",
+      "currency": "¥",
+      "status": "SUCCESS",
+      "purpose": "13.4 single optimization optimized unified queue acceptance"
+    },
+    {
+      "ordinal": 14,
+      "model": "seedance-2.0-mini-t2v",
+      "intent_sha256": "74f60763828a3efe116da455d5b5c2a65ce3d563c18783d8a80f4b18be185d5b",
+      "amount": "0.8028",
+      "currency": "¥",
+      "status": "completed",
+      "scope": "13.3 Codex-to-DSH actual Host acceptance; request key digest"
+    }
+  ],
+  "latest_review": {
+    "date": "2026-11-14",
+    "scope": "1.2/1.5/1.6 existing contract evidence and local draft validation",
+    "new_paid_submissions": 0,
+    "new_provider_requests": 0,
+    "remaining_maximum": 5,
+    "evidence": "contract-review-closure.md",
+    "decision": "no paid probe can establish all missing rules; preserve budget and unknown fallbacks"
+  },
+  "authorization_window": {
+    "date": "2026-11-14",
+    "historical_submissions_at_start": 8,
+    "previous_remaining": 2,
+    "newly_authorized": 8,
+    "limit": 10,
+    "used": 5,
+    "remaining": 5,
+    "scope": "global draft/final followed by Fast i2v and Standard multi unified queue; minimum parameters; prompt optimization disabled; one additional Mini t2v optimization enabled with explicit single_allow, no persistent preference change"
+  },
+  "host_acceptance_reservation": {
+    "date": "2026-11-14",
+    "purpose": "13.3 Codex submit and DSH cross-host delivery",
+    "authorized_maximum": 1,
+    "submission_intents": 1,
+    "status": "completed; temporary Host configuration and installation cleaned; original, delivery and task state retained",
+    "request_key": "host-provider-acceptance-20261114-a",
+    "model": "seedance-2.0-mini-t2v",
+    "parameters": "4 seconds, 480p, audio false, enhance_prompt false",
+    "counting_rule": "Count one at POST intent, including uncertain outcome; do not retry unknown submission",
+    "host_submit_call_count": 1,
+    "task_id": "012efe97d75d429594f88cf41646d9d6"
+  }
+}

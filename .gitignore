@@ -53,6 +53,7 @@ node_modules/
 /dist/
 /build/
 /output/
+/deliveries/
 
 # Generated test/coverage reports, including nested Python/Node subprojects.
 # Reserve these paths for runner output; use a reviewed, narrow exception for

@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-14",
+  "case": {
+    "model": "seedance-2.0-mini-t2v",
+    "input_sha256": null,
+    "output_sha256": "822f16359f9a249e3819aac8498afa5b4e07868bc72935eb6285c6f43a1cefb9",
+    "size_bytes": 734552,
+    "charge": {
+      "state": "confirmed",
+      "amount": "0.8028",
+      "currency": "¥"
+    },
+    "artifact_set_status": "unverified",
+    "delivery": "partial",
+    "duplicate_same_task": true,
+    "backend_pid_matched": true
+  },
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 640,
+        "height": 640
+      }
+    ],
+    "format": {
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "duration": "4.041667"
+    }
+  },
+  "final_delivery": "partial",
+  "authorization": {
+    "enabled": true,
+    "source": "single_allow",
+    "policy_version": 0
+  },
+  "policy_before": {
+    "enabled": false,
+    "version": 0
+  },
+  "policy_after": {
+    "enabled": false,
+    "version": 0
+  },
+  "following_preflight_authorization": {
+    "enabled": false,
+    "source": "default_false",
+    "policy_version": 0
+  },
+  "counts": {
+    "paid_submissions": 1,
+    "queries": 9,
+    "uploads": 0,
+    "ready_video_copies": 1
+  },
+  "database": {
+    "tasks": 1,
+    "submit_attempts": 1,
+    "preference_rows": 0
+  },
+  "shutdown_exit_code": 0,
+  "source_hashes": {
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\admission.py": "9ac1302b6354498fdfa56d1dc1a3f374044b9d505e3144801a3dda067b747399",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\admission_rpc.py": "b7f29177b56fc8b113b5abfed9b01f720e75081c23d73c1b0c62365745300114",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\artifacts.py": "73bb234a58d136a23092b372ba4393b04f57805bb3eea0a74eaaf9f632ff23a3",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\artifact_files.py": "2de300e45890b3fde9f6a8d5e0be2e1f4ada362816a0969cf32b4784c7e79e19",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\artifact_manifest.py": "08ea92d284bdefa9285d43913c1135d443cc8842da661b4acd347640b517b07a",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\charges.py": "11b25181fa16d694fc9a49283a1d83c124357d9340c2df825e3d7a5881732617",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\cleanup.py": "124208cb02703310191a1c9d49a78dd10dcb63017c7b83f675606a5e4e99731f",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\cleanup_rules.py": "8238a789cdfd32557e5a00e435f5d10b4b14077cd08804023bb064e7303da92f",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\cli.py": "7213e8a181d121bd9a56017be4b7388201a04c48bb7a7721e474b6bea2a0a511",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\compatibility_adapter.py": "a18e5627947648937cf6854db37e4b425e5ff55d8130ab1bb76a11e12ab94dcf",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\config.py": "4705377bad209719eb56cc5c96dd69fdd62a48ab55921e7490ec4757b42137d5",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\diagnostics.py": "7bb8bf25483d440852f67817acc570213c151f53e8106e42288c21d3a2ce91f9",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\frontend.py": "bc1a444ac37c35dfbc482eb2d07c1eda6505687daea8f3838b7548ccf98c01b1",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\leases.py": "b61a448e0565f3fd49dc831582a2727d377e2f79f61f2df54b1cc91255e40b5e",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\lifecycle.py": "a0bcdb30c17d41137214f14bc970bf2e7bf4ec5eeea9d01f8555c9ce9f1f1002",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\materials.py": "45fa1f1514741ccc25b4805d6de44c78471d6e66a11aa15ace917c798dd84bc1",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\material_readers.py": "a9835320a4504057c7f1038f1c8cc870788b3fd4a556c344acf28188e30fdd56",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\models.py": "39505e752e52161d49e08773bb46ea6dc45c5ed90213e177aecaeddd621c5448",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\network.py": "0fb3acae283324fcbc2a61ebfb338204603d79971826a706ccc8b6f3b0ec8331",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\ownership.py": "0fd678b5fd3c65cbb96f95832f6c7b835ade8a1beb616fd35f3fb36f0aab4a9c",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\parameters.py": "4c7ba01cdb4ea6a35f12cd5f02982d4275c869ba74f9f6e12c3f4629e864cbec",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\preflight.py": "36004af632cbe00b2f7618253c05b4dc60d2a636d8af78239199a8f5489470d7",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\provider.py": "69615169287ad8ab71d827ff84255934e7ba15e7a7d591cb844410720bdd873a",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\provider_response.py": "bb2d941de48aec1a6a30942bb4aa3ceed37264ecd05e3f6820c907ce66c4e823",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\queries.py": "ebb72741db74ca058fb2b08a50f5fa3e5732cabf3cb66425ef922afc29617f04",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\rpc.py": "eb68006a0909480c85db62ce93898cf00116bf9af8aad3bef813da7602a8bc2f",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\runtime.py": "1efc8495612c7b71830da06ef8773a420f0dd50955af5c51351dc0b899b64f59",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\scheduler.py": "6c6c9581b242a7977fc5b439bec7f6cc601fa6b6f257fe86c4ff790b0978a5bf",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\storage.py": "5ec9e8541e01246081e754724e7c648b12a2c0cdd53beaee7eb4aa2e0043091a",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\task_state.py": "ab8b4718b9b67edf53161055f1396791c3cf81b4ab2bddc6317de5bd0abf5ab1",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\tools.py": "6a0ede2cb047470691d306f85e62e32a2aaaca1c1f9b6aaccebc5c5f9c88ae48",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\uploads.py": "017c75af8d874468b9bf8e5aafe8330166faeafb245061697dcba5804ca48a1e",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\upload_service.py": "55224528c0a2143d257099a8e712546862179c05152de0d905345a6e10ef89e0",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\windows_security.py": "36c97e20450a9099d4a4c327575efa8d535beb629bd3d36b148e3db07d7436a6",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\__init__.py": "e799fef2a17f8781c4a15494c8746e922eee9b3df575345d60e90302517269ce",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\src\\zhenzhen_seedance_video\\__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\optimization_queue_acceptance.py": "02b4e12962917d7097a183ab5096effd9c337d73584d578f481653dfd6263270"
+  },
+  "authorization_window": {
+    "date": "2026-11-14",
+    "historical_submissions_at_start": 8,
+    "previous_remaining": 2,
+    "newly_authorized": 8,
+    "limit": 10,
+    "used": 5,
+    "remaining": 5,
+    "scope": "global draft/final followed by Fast i2v and Standard multi unified queue; minimum parameters; prompt optimization disabled; one additional Mini t2v optimization enabled with explicit single_allow, no persistent preference change"
+  },
+  "actual_amount_this_run": "0.8028",
+  "lifetime_observed_amount": "47.020240",
+  "currency": "¥",
+  "scope": "production queue via MCP SDK stdio; unchanged isolated policy; no preference setter or real user Host configuration touched; no visual quality claim"
+}

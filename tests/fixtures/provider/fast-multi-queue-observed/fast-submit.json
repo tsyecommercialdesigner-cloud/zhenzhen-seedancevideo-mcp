@@ -1,0 +1,9 @@
+{
+  "id": "task_fast_queue_01",
+  "task_id": "task_fast_queue_01",
+  "object": "video",
+  "model": "seedance-2.0-global-fast-i2v",
+  "status": "queued",
+  "progress": 0,
+  "created_at": 0
+}
