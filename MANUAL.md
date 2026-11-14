@@ -2,7 +2,7 @@
 
 ## 版本与适用范围
 
-本候选版本为 **0.1.0.dev0**，预期标签 **v0.1.0.dev0**（开发预发行版）。包版本、锁文件及入口版本均为 0.1.0.dev0。已发布 [v0.1.0.dev0 预发行版](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev0)，发布提交 SHA 为 `d0cbe6de5471d631016706438f1a6df0b08ef04c`。Windows 发布候选全量隔离测试及构建通过；源码包 SHA-256 为 `9c572bc82f94c5045bd928db5a5a820cb667ad67c8aba9a7e385769bbfa41ddd`。完整产物集合和部分模型仍待核实，Job 生命周期限制未修复。
+本版本为 **0.1.0.dev0**，标签 **v0.1.0.dev0**（开发预发行版）。包版本、锁文件及入口版本均为 0.1.0.dev0。已发布 [v0.1.0.dev0 预发行版](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev0)，发布提交 SHA 为 `d0cbe6de5471d631016706438f1a6df0b08ef04c`。Windows 发布候选全量隔离测试及构建通过；源码包 SHA-256 为 `9c572bc82f94c5045bd928db5a5a820cb667ad67c8aba9a7e385769bbfa41ddd`。完整产物集合和部分模型仍待核实，Job 生命周期限制未修复。
 
 仅 Windows；要求 PowerShell、uv 和可获得的 Python 3.12.14。uv 安装时按锁文件取得依赖；代理／包源问题应在安装阶段处理。MCP 的网络代理配置不会自动配置 uv。Codex Desktop、Claude Desktop和DeepSeek Harness Desktop已有工具发现/共享查询证据，Codex与DSH已有跨Host主视频交付证据；具体范围见[验证记录](docs/verification-add-local-video-generation-service.md)，不代表任意Host兼容保证。
 
