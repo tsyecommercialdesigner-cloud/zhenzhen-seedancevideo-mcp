@@ -2,7 +2,7 @@
 
 ## 1. 环境准备与适用范围
 
-本手册对应 **0.1.0.dev1**，预期标签 **v0.1.0.dev1**（开发预发行版）。包版本、锁文件及入口版本为 0.1.0.dev1；发布、最终提交 SHA、资产摘要及发布验收结果待确认，请以对应 Release 的实际记录为准。完整产物集合和部分模型仍待核实，Job 生命周期限制未修复。
+本手册对应 **0.1.0.dev1**，已发布为 [v0.1.0.dev1 开发预发行版](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev1)，标签提交 SHA 为 `a1af92b7a021f27e7a1f3115f7ae015d74ba7be6`。发布 PR 的 Windows 隔离测试及构建通过；源码包 SHA-256 为 `38f3698c7b105fdb31b6c1858288c2f7c4a60ed8da109373956f871240649758`。完整产物集合和部分模型仍待核实，Job 生命周期限制未修复。
 
 仅 Windows；需要 Git、PowerShell 7、uv、可获得的 Python 3.12.14 和 GitHub/包源访问权限。锁定 MCP SDK 2.3.0；传输为本地 stdio，协议版本由客户端与 SDK 协商，具体版本以检查输出为准。uv 安装时按锁文件取得依赖；代理／包源问题应在安装阶段处理。MCP 的网络代理配置不会自动配置 uv。Codex Desktop、Claude Desktop和DeepSeek Harness Desktop已有工具发现/共享查询证据，Codex与DSH已有跨Host主视频交付证据；具体版本和范围见[验证记录](docs/verification-add-local-video-generation-service.md)，不代表任意Host兼容保证。
 
@@ -15,7 +15,7 @@
 ```powershell
 $ErrorActionPreference = 'Stop'
 $ProjectDir = 'D:\MCP\zhenzhen-seedancevideo-mcp'
-$ExpectedCommit = Read-Host '输入 v0.1.0.dev1 Release 记录的完整提交 SHA'
+$ExpectedCommit = 'a1af92b7a021f27e7a1f3115f7ae015d74ba7be6'
 if ($ExpectedCommit -notmatch '^[0-9a-fA-F]{40}$') { throw '需要完整的 40 位提交 SHA。' }
 if (Test-Path -LiteralPath $ProjectDir) { throw '目标已存在，请按升级步骤处理。' }
 New-Item -ItemType Directory -Path 'D:\MCP' -Force | Out-Null
@@ -100,9 +100,9 @@ uv --directory 'D:\MCP\zhenzhen-seedancevideo-mcp' run --no-sync zhenzhen-seedan
 
 ## 3. 本地可用性检查
 
-目标版本包含模块 `zhenzhen_seedance_video.protocol_probe`；**已发布的 v0.1.0.dev0 不包含该模块**。发布 v0.1.0.dev1 后，先将实际安装目录 `.env` 的 `ZHENZHEN_SEEDANCE_EXECUTION_MODE` 设为 `local` 并填写密钥，运行：
+v0.1.0.dev1 包含模块 `zhenzhen_seedance_video.protocol_probe`；**已发布的 v0.1.0.dev0 不包含该模块**。先将实际安装目录 `.env` 的 `ZHENZHEN_SEEDANCE_EXECUTION_MODE` 设为 `local` 并填写密钥，运行：
 
-当前未发布源码包及 wheel 均已在隔离 Windows 环境安装并运行该检查；wheel 验证通过锁文件冻结同步准备依赖，再卸载源码安装并安装 wheel。结果不代表已发布版本包含该脚本，也不代表空缓存离线安装已验证。
+发布前的工作区源码包及 wheel 已在隔离 Windows 环境安装并运行该检查；wheel 验证通过锁文件冻结同步准备依赖，再卸载源码安装并安装 wheel。v0.1.0.dev1 发行资产包含该模块，但该版本发行资产的独立安装运行以及空缓存离线安装尚未单独验证。
 
 ```powershell
 uv --directory 'D:\MCP\zhenzhen-seedancevideo-mcp' run --no-sync python -m zhenzhen_seedance_video.protocol_probe

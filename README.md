@@ -2,7 +2,7 @@
 
 Windows 本地 stdio MCP Server，同一 Windows 用户的多个 Agent Host 共享任务后端、持久化队列与产物。
 
-目标版本 **0.1.0.dev1**，预期标签 `v0.1.0.dev1`；发布和最终提交待确认。本地生命周期、任务管理和文件交付已有隔离验证，供应商 SUCCESS／实扣及代表性真实闭环已有独立证据。默认发行入口为 local，显式配置 provider 并重启后新提交才可付费执行；旧 local 任务不自动补授权。已有干净 Windows 安装及实际 Host 跨 Host 主视频交付证据；完整产物集合仍待核实。Job 生命周期调查已关闭，启动器结束可能连带终止后端，兼容性限制尚未修复。具体范围及未验证项见[验证记录](docs/verification-add-local-video-generation-service.md)。
+当前版本 **0.1.0.dev1**，已发布为[开发预发行版](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev1)，标签提交 `a1af92b7a021f27e7a1f3115f7ae015d74ba7be6`。本地生命周期、任务管理和文件交付已有隔离验证，供应商 SUCCESS／实扣及代表性真实闭环已有独立证据。默认发行入口为 local，显式配置 provider 并重启后新提交才可付费执行；旧 local 任务不自动补授权。已有干净 Windows 安装及实际 Host 跨 Host 主视频交付证据；完整产物集合仍待核实。Job 生命周期调查已关闭，启动器结束可能连带终止后端，兼容性限制尚未修复。具体范围及未验证项见[验证记录](docs/verification-add-local-video-generation-service.md)。
 
 - 安装、配置、升级和回滚：[MANUAL.md](MANUAL.md)
 - 工具及恢复：[Agent 工具手册](docs/agent-tools.md)

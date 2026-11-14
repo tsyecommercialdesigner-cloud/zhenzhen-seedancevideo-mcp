@@ -829,6 +829,16 @@
     "cleanup": "verified exact root and 325 in-scope symbolic links; unlinked then removed test/build root; preserved existing paid state and videos"
   },
   {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\release-dev1-candidate",
+    "purpose": "CI candidate download and release notes for v0.1.0.dev1",
+    "version": "v0.1.0.dev1; release commit a1af92b7a021f27e7a1f3115f7ae015d74ba7be6",
+    "task": "dev1 release and backfill",
+    "owner": "Agent",
+    "status": "removed; verified artifacts published and remote hashes confirmed; local candidate root absent",
+    "release_condition": "completed 2026-11-14; release evidence recorded",
+    "cleanup": "verified exact root and absence of reparse points; removed local candidate and notes; remote assets retained"
+  },
+  {
     "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\wheel-full-20261114",
     "purpose": "isolated wheel installation and full delivery regression",
     "version": "unreleased workspace 0.1.0.dev0",
