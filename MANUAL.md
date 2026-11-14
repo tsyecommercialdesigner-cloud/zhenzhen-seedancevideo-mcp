@@ -2,7 +2,7 @@
 
 ## 1. 环境准备与适用范围
 
-本版本为 **0.1.0.dev0**，标签 **v0.1.0.dev0**（开发预发行版）。包版本、锁文件及入口版本均为 0.1.0.dev0。已发布 [v0.1.0.dev0 预发行版](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev0)，发布提交 SHA 为 `d0cbe6de5471d631016706438f1a6df0b08ef04c`。Windows 发布候选全量隔离测试及构建通过；源码包 SHA-256 为 `9c572bc82f94c5045bd928db5a5a820cb667ad67c8aba9a7e385769bbfa41ddd`。完整产物集合和部分模型仍待核实，Job 生命周期限制未修复。
+本手册对应 **0.1.0.dev1**，预期标签 **v0.1.0.dev1**（开发预发行版）。包版本、锁文件及入口版本为 0.1.0.dev1；发布、最终提交 SHA、资产摘要及发布验收结果待确认，请以对应 Release 的实际记录为准。完整产物集合和部分模型仍待核实，Job 生命周期限制未修复。
 
 仅 Windows；需要 Git、PowerShell 7、uv、可获得的 Python 3.12.14 和 GitHub/包源访问权限。锁定 MCP SDK 2.3.0；传输为本地 stdio，协议版本由客户端与 SDK 协商，具体版本以检查输出为准。uv 安装时按锁文件取得依赖；代理／包源问题应在安装阶段处理。MCP 的网络代理配置不会自动配置 uv。Codex Desktop、Claude Desktop和DeepSeek Harness Desktop已有工具发现/共享查询证据，Codex与DSH已有跨Host主视频交付证据；具体版本和范围见[验证记录](docs/verification-add-local-video-generation-service.md)，不代表任意Host兼容保证。
 
@@ -15,10 +15,11 @@
 ```powershell
 $ErrorActionPreference = 'Stop'
 $ProjectDir = 'D:\MCP\zhenzhen-seedancevideo-mcp'
-$ExpectedCommit = 'd0cbe6de5471d631016706438f1a6df0b08ef04c'
+$ExpectedCommit = Read-Host '输入 v0.1.0.dev1 Release 记录的完整提交 SHA'
+if ($ExpectedCommit -notmatch '^[0-9a-fA-F]{40}$') { throw '需要完整的 40 位提交 SHA。' }
 if (Test-Path -LiteralPath $ProjectDir) { throw '目标已存在，请按升级步骤处理。' }
 New-Item -ItemType Directory -Path 'D:\MCP' -Force | Out-Null
-git clone --branch v0.1.0.dev0 --single-branch https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp.git $ProjectDir
+git clone --branch v0.1.0.dev1 --single-branch https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp.git $ProjectDir
 if ($LASTEXITCODE -ne 0) { throw 'clone 失败，请检查仓库权限和网络。' }
 $ActualCommit = (git -C $ProjectDir rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $ActualCommit -ne $ExpectedCommit) { throw '标签提交不匹配。' }
@@ -31,11 +32,11 @@ if (-not (Test-Path -LiteralPath (Join-Path $ProjectDir '.env'))) {
 }
 ```
 
-版本预期输出 `0.1.0.dev0`；标签 checkout 为 detached HEAD 是正常的。安装后用本地编辑器填写安装目录 `.env`。文件是明文，应限制 NTFS ACL，仅授权实际运行账户和必要管理账户读取。以下源码包安装是替代方式。
+版本预期输出 `0.1.0.dev1`；标签 checkout 为 detached HEAD 是正常的。安装后用本地编辑器填写安装目录 `.env`。文件是明文，应限制 NTFS ACL，仅授权实际运行账户和必要管理账户读取。以下源码包安装是替代方式。
 
 ### 使用 Release 源码包
 
-从仓库 Release `v0.1.0.dev0` 下载 `zhenzhen_seedancevideo_mcp-0.1.0.dev0.tar.gz` 和 `SHA256SUMS.txt`。也可使用来源可信且另附 SHA-256 的本地构建包；即使版本号相同，本地构建的内容也可能不同，不应视为已发布资产。
+发布后从仓库 Release `v0.1.0.dev1` 下载 `zhenzhen_seedancevideo_mcp-0.1.0.dev1.tar.gz` 和 `SHA256SUMS.txt`。也可使用来源可信且另附 SHA-256 的本地构建包；即使版本号相同，本地构建的内容也可能不同，不应视为已发布资产。
 
 在 PowerShell 执行。输入本机实际源码包路径；目标目录必须不存在，不覆盖已有安装。
 
@@ -58,7 +59,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $ProjectDir '.env'))) {
 }
 ```
 
-预期版本 0.1.0.dev0。源码包包含 uv.lock、源码和文档；wheel 可安装，但单独 wheel 不携带完整 uv 项目，成员默认使用上述源码包。安装不依赖维护者 `.venv`、测试文件或用户 HOME 中的 `.env`。
+预期版本 0.1.0.dev1。源码包包含 uv.lock、源码和文档；wheel 可安装，但单独 wheel 不携带完整 uv 项目，成员默认使用上述源码包。安装不依赖维护者 `.venv`、测试文件或用户 HOME 中的 `.env`。
 
 ### 配置与初始化
 
@@ -99,7 +100,7 @@ uv --directory 'D:\MCP\zhenzhen-seedancevideo-mcp' run --no-sync zhenzhen-seedan
 
 ## 3. 本地可用性检查
 
-当前工作区新增发行包模块 `zhenzhen_seedance_video.protocol_probe`；**已发布的 v0.1.0.dev0 不包含该模块**，须等待包含此模块的后续版本发布后使用。先将实际安装目录 `.env` 的 `ZHENZHEN_SEEDANCE_EXECUTION_MODE` 设为 `local` 并填写密钥，运行：
+目标版本包含模块 `zhenzhen_seedance_video.protocol_probe`；**已发布的 v0.1.0.dev0 不包含该模块**。发布 v0.1.0.dev1 后，先将实际安装目录 `.env` 的 `ZHENZHEN_SEEDANCE_EXECUTION_MODE` 设为 `local` 并填写密钥，运行：
 
 当前未发布源码包及 wheel 均已在隔离 Windows 环境安装并运行该检查；wheel 验证通过锁文件冻结同步准备依赖，再卸载源码安装并安装 wheel。结果不代表已发布版本包含该脚本，也不代表空缓存离线安装已验证。
 
@@ -189,7 +190,7 @@ API Key 用于供应商；本地前后端 RPC 使用受当前用户目录权限�
 ### 升级与回滚
 
 1. 记录当前包版本、包 SHA-256 和可用的发布 SHA。正常退出全部 Host，确认旧后端结束；不能确认时停止维护。
-2. 保留私有 `.env` 原文件、权限及旧安装，不用解包覆盖它。下载目标版本 v0.1.0.dev0 的源码包并核对 SHA-256，按上面的首次安装步骤将其安装到独立候选目录；不要启动或填写新密钥探测供应商。
+2. 保留私有 `.env` 原文件、权限及旧安装，不用解包覆盖它。下载目标版本 v0.1.0.dev1 的源码包并核对 SHA-256，按上面的首次安装步骤将其安装到独立候选目录；不要启动或填写新密钥探测供应商。
 3. 首次安装步骤会在候选目录创建空密钥 `.env` 模板。确认该候选文件确为本次新建的空模板后，在停机窗口由用户安全替换为原 `.env` 的私有副本；如果候选已含任何用户配置，停止并手工合并，不能覆盖。核对内容摘要和 NTFS 权限，记录原／新 Host 路径。状态与输出不迁移，备份按 [离线维护](docs/storage-recovery.md) 完成。
 4. 新包冻结安装和版本检查通过后，将 Host 的 `--directory` 指向候选目录，重启并执行第 3 节的工具发现与本地状态检查；检查失败时停止并按第 5 步评估回滚。工作区有源码改动或未跟踪冲突时先停止，不强制覆盖。
 5. 回滚程序仅当旧程序支持现有 schema 时进行：退出所有 Host，恢复原 Host 路径及旧安装，保留当前任务库。过新 schema 明确拒绝，不能降级或重建空库。首期没有自动升级／回滚命令。
