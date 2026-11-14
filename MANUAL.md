@@ -2,21 +2,23 @@
 
 ## 版本与适用范围
 
-当前开发包 0.1.0.dev0，尚未发布正式 GitHub Release。默认正式交付路径为仓库发布的 CI 通过版本；当前实现尚未提交／发布，因此本手册先提供本地构建源码包安装，不编造标签或完整 SHA。发布后必须补充对应提交、CI 和资产摘要后才提供版本固定的 GitHub 安装步骤。
+本候选版本为 **0.1.0.dev0**，预期标签 **v0.1.0.dev0**（开发预发行版）。包版本、锁文件及入口版本均为 0.1.0.dev0。发布、最终提交 SHA、资产摘要及本候选完整验收结果目前待确认；发布后以实际结果回填，未验证范围保持明确。
 
 仅 Windows；要求 PowerShell、uv 和可获得的 Python 3.12.14。uv 安装时按锁文件取得依赖；代理／包源问题应在安装阶段处理。MCP 的网络代理配置不会自动配置 uv。Codex Desktop、Claude Desktop和DeepSeek Harness Desktop已有工具发现/共享查询证据，Codex与DSH已有跨Host主视频交付证据；具体范围见[验证记录](docs/verification-add-local-video-generation-service.md)，不代表任意Host兼容保证。
 
 默认发行入口已接通已核实供应商适配器，但EXECUTION_MODE默认local，不执行供应商或下载网络请求。管理员显式配置provider并重启后，新正式提交可自动上传、生成、查询和下载。发行入口及实际Host已有相应验收证据；完整产物集合仍待核实。Job生命周期调查已关闭，但启动器终止可能连带结束后端的兼容性限制未修复，不重开排查。合成适配器只在开发测试目录内，不随发行包提供，也没有用户环境变量后门。请勿用“任务 accepted”判断已向供应商提交。
 
-## 首次安装（本地构建源码包）
+## 首次安装（版本化源码包）
 
-维护者先在仓库执行 `uv build`。将 `dist/zhenzhen_seedancevideo_mcp-0.1.0.dev0.tar.gz` 交给测试成员，并另附维护者生成的 SHA-256 校验值；不要使用来源不明的包。当前没有正式发布资产，本轮不代替发布。
+发布确认后，从仓库 Release `v0.1.0.dev0` 下载 `zhenzhen_seedancevideo_mcp-0.1.0.dev0.tar.gz` 和 `SHA256SUMS.txt`；发布前这些资产尚不可用。也可使用来源可信且另附 SHA-256 的同版本本地构建包。
 
 在 PowerShell 执行。输入本机实际源码包路径；目标目录必须不存在，不覆盖已有安装。
 
 ```powershell
 $ErrorActionPreference = 'Stop'
 $Archive = (Resolve-Path -LiteralPath (Read-Host '输入已核对 SHA-256 的源码包绝对路径')).Path
+$ExpectedSHA256 = Read-Host '输入可信 SHA256SUMS.txt 中该源码包的 SHA-256'
+if ((Get-FileHash -LiteralPath $Archive -Algorithm SHA256).Hash -ne $ExpectedSHA256) { throw '源码包 SHA-256 不匹配。' }
 $ProjectDir = 'D:\MCP\zhenzhen-seedancevideo-mcp'
 if (Test-Path -LiteralPath $ProjectDir) { throw '目标已存在，请按升级流程处理。' }
 New-Item -ItemType Directory -Path $ProjectDir | Out-Null
@@ -75,7 +77,7 @@ API Key 用于供应商；本地前后端 RPC 使用受当前用户目录权限�
 ## 升级与回滚
 
 1. 记录当前包版本、包 SHA-256 和可用的发布 SHA。正常退出全部 Host，确认旧后端结束；不能确认时停止维护。
-2. 保留私有 `.env` 原文件、权限及旧安装，不用解包覆盖它。按上面的首次安装步骤将新源码包安装到独立候选目录；不要启动或填写新密钥探测供应商。
+2. 保留私有 `.env` 原文件、权限及旧安装，不用解包覆盖它。下载目标版本 v0.1.0.dev0 的源码包并核对 SHA-256，按上面的首次安装步骤将其安装到独立候选目录；不要启动或填写新密钥探测供应商。
 3. 在停机窗口将原 `.env` 安全复制到候选实际安装目录，核对文件摘要和权限；记录原／新 Host 路径。状态与输出不迁移，备份按 [离线维护](docs/storage-recovery.md) 完成。
 4. 新包冻结安装、版本与工具发现通过后，修改 Host 的 `--directory` 指向候选目录并验证本地状态。发布前先保持开发验收范围。
 5. 回滚程序仅当旧程序支持现有 schema 时进行：退出所有 Host，恢复原 Host 路径及旧安装，保留当前任务库。过新 schema 明确拒绝，不能降级或重建空库。首期没有自动升级／回滚命令。
