@@ -263,3 +263,9 @@ Windows 对带 KILL_ON_JOB_CLOSE 标志的 Job 最后句柄关闭行为，以及
 - 基于当前未发布工作区离线构建 sdist 与 wheel；用 sdist 和锁文件在隔离虚拟环境执行 `uv sync --offline --frozen --no-dev` 准备依赖，卸载源码安装后单独以 `uv pip install --offline --no-deps` 安装 wheel。从无关工作目录确认模块加载路径在该虚拟环境 `site-packages`，设置 local 和占位密钥后运行 `python -m zhenzhen_seedance_video.protocol_probe`，退出 0：协议 2025-11-25、23 工具、资源及提示词均为空、local=ok。wheel SHA-256 `27b61d030615419bfcc51671f960d3d490297be923b37229c067ef747089767a`；更新手册后再次构建，wheel 摘要一致。
 - 首次尝试使用 `uv export --frozen` 的带哈希依赖文件在新环境直接离线安装失败：当前缓存没有该安装方式所需的 pydantic-core 和 rpds-py 归档；随后使用上述冻结同步成功。测试依赖现有缓存，不代表空缓存或仅凭 wheel 完成离线安装。
 - `uv run --frozen pytest -q --basetemp .cache/wheel-full-20261114/tests`：561 passed，耗时 557.20 秒；`uv run --frozen ruff check .` 和 `uv run --frozen ruff format --check .` 通过（170 个文件）；`uv build --offline` 成功。未调用真实供应商，未测试实际 Host 或发布版本；脚本和测试仍待纳入版本控制及下一版本。完整产物集合待核实，Job 生命周期调查保持关闭。隔离资源清理状态见资源清单。
+
+## 2026-11-14 v0.1.0.dev1 发布记录
+
+- 功能 PR #6 与版本准备 PR #7 的 Windows 检查通过并合入 dev；发布 PR #8 的 Windows 隔离测试、检查及构建通过，CI run 43584559133 产生候选。合并 main 的提交 `a1af92b7a021f27e7a1f3115f7ae015d74ba7be6` 的树 `8d8b8d4dc01b7379b539e1a590905ab5bd093591` 与候选树一致；CI `SOURCE_COMMIT.txt` 为临时 PR 合并提交 `1280a902250338d5d7f6f861db468070f04ee268`。
+- 预发行 [v0.1.0.dev1](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev1) 标签指向上述 main 提交；远端 wheel SHA-256 `1632657b1c61cbdfae4b9f4679b90155d2e0bc46a83c41c5893361173927fed1`，源码包 `38f3698c7b105fdb31b6c1858288c2f7c4a60ed8da109373956f871240649758`，与候选摘要一致。两包包含协议检查模块，定向敏感信息扫描通过；wheel RECORD 的随机摘要触发通用 token 模式误报，作为摘要清单排除后复核。
+- 本轮没有真实供应商调用或新 Host 验收，v0.1.0.dev1 发布资产独立安装运行未单独验证；完整产物集合及部分模型仍待核实，已关闭的 Job 生命周期调查不重开。候选下载清理状态见资源清单。
