@@ -1,0 +1,38 @@
+{
+  "source": "authorized live provider HTTP capture",
+  "paid_submissions": 1,
+  "query_requests": 4,
+  "model": "seedance-2.0-mini-t2v",
+  "seconds": "4",
+  "resolution": "480p",
+  "enhance_prompt": false,
+  "captures": [
+    {
+      "fixture": "submit-queued.json",
+      "method": "POST",
+      "path": "/v1/video/generations",
+      "http_status": 200,
+      "captured_utc": "2026-11-13T10:33:46.435213+00:00",
+      "content_type": "application/json; charset=utf-8",
+      "raw_sha256": "d8253668aeb3f198c161eecc69a5644ca7ea4450cf0f209a762d1c6cbc424abd"
+    },
+    {
+      "fixture": "query-in-progress.json",
+      "method": "GET",
+      "path": "/v1/video/generations/{id}",
+      "http_status": 200,
+      "captured_utc": "2026-11-13T10:33:53.386610+00:00",
+      "content_type": "application/json",
+      "raw_sha256": "f80160436626127ff84bbb906f206ad7c3452459803f862182836ccd012330b3"
+    },
+    {
+      "fixture": "query-success-usage.json",
+      "method": "GET",
+      "path": "/v1/video/generations/{id}",
+      "http_status": 200,
+      "captured_utc": "2026-11-13T10:35:45.457610+00:00",
+      "content_type": "application/json",
+      "raw_sha256": "b5fb84e0032b76adefe7e3277b5d5e1289037921929da7477957eb848d218a68"
+    }
+  ]
+}

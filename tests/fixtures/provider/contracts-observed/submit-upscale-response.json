@@ -1,0 +1,9 @@
+{
+  "id": "task_upscale_probe_01",
+  "task_id": "task_upscale_probe_01",
+  "object": "video",
+  "model": "zhenzhen-upscaler",
+  "status": "queued",
+  "progress": 0,
+  "created_at": 1794615504
+}

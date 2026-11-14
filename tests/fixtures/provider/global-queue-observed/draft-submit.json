@@ -1,0 +1,9 @@
+{
+  "id": "task_draft_queue_01",
+  "task_id": "task_draft_queue_01",
+  "object": "video",
+  "model": "seedance-2.5-global-standard-t2v",
+  "status": "queued",
+  "progress": 0,
+  "created_at": 0
+}

@@ -1,0 +1,37 @@
+{
+  "code": "success",
+  "message": "",
+  "data": {
+    "id": 0,
+    "created_at": 0,
+    "updated_at": 0,
+    "task_id": "task_final_queue_01",
+    "platform": "[REDACTED]",
+    "source": "[REDACTED]",
+    "user_id": 0,
+    "group": "[REDACTED]",
+    "channel_id": 0,
+    "quota": 0,
+    "billing_source": "[REDACTED]",
+    "action": "[REDACTED]",
+    "status": "IN_PROGRESS",
+    "fail_reason": "",
+    "submit_time": 0,
+    "start_time": 0,
+    "finish_time": 0,
+    "progress": "50%",
+    "properties": {
+      "input": "",
+      "upstream_model_name": "[REDACTED]",
+      "origin_model_name": "seedance-2.5-global-standard-draft-to-video"
+    },
+    "data": {
+      "content": {},
+      "id": "task_final_queue_01",
+      "model": "seedance-2.5-global-standard-draft-to-video",
+      "status": "processing"
+    },
+    "request_data": "[REDACTED]",
+    "price_estimate": null
+  }
+}

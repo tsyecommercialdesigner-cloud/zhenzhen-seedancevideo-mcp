@@ -1,0 +1,69 @@
+{
+  "code": "success",
+  "message": "",
+  "data": {
+    "id": 0,
+    "created_at": 1794615505,
+    "updated_at": 1794615570,
+    "task_id": "task_draft_probe_01",
+    "platform": "[REDACTED]",
+    "source": "[REDACTED]",
+    "user_id": 0,
+    "group": "[REDACTED]",
+    "channel_id": 0,
+    "quota": 0,
+    "billing_source": "[REDACTED]",
+    "usage": {
+      "amount": 2.688892,
+      "currency": "¥"
+    },
+    "action": "[REDACTED]",
+    "status": "SUCCESS",
+    "fail_reason": "",
+    "result_url": "https://example.invalid/material.mp4",
+    "submit_time": 1794615505,
+    "start_time": 1794615506,
+    "finish_time": 1794615570,
+    "progress": "100%",
+    "properties": {
+      "input": "",
+      "upstream_model_name": "seedance-2.5-standard-t2v",
+      "origin_model_name": "seedance-2.5-standard-t2v"
+    },
+    "data": {
+      "content": {
+        "draft": true,
+        "draft_task_id": "task_draft_probe_01",
+        "video_url": "https://example.invalid/material.mp4"
+      },
+      "id": "task_draft_probe_01",
+      "model": "seedance-2.5-standard-t2v",
+      "status": "succeeded",
+      "upstream": {
+        "response": {
+          "results": [
+            {
+              "name": "[REDACTED]",
+              "outputType": "mp4",
+              "url": "https://example.invalid/material.mp4"
+            }
+          ],
+          "usage": {
+            "tokenUsage": {
+              "usage": {
+                "completion_tokens": "[REDACTED]",
+                "total_tokens": "[REDACTED]"
+              }
+            }
+          }
+        }
+      },
+      "usage": {
+        "completion_tokens": 0,
+        "total_tokens": 0
+      }
+    },
+    "request_data": "[REDACTED]",
+    "price_estimate": null
+  }
+}

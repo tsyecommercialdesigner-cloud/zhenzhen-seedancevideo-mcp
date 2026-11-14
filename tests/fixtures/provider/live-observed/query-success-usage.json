@@ -1,0 +1,67 @@
+{
+  "code": "success",
+  "message": "",
+  "data": {
+    "id": 0,
+    "created_at": 1794566025,
+    "updated_at": 1794566131,
+    "task_id": "task_live_probe_01",
+    "platform": "[REDACTED]",
+    "source": "[REDACTED]",
+    "user_id": 0,
+    "group": "[REDACTED]",
+    "channel_id": 0,
+    "quota": 0,
+    "billing_source": "[REDACTED]",
+    "usage": {
+      "amount": 0.8028,
+      "currency": "¥"
+    },
+    "action": "[REDACTED]",
+    "status": "SUCCESS",
+    "fail_reason": "",
+    "result_url": "https://example.invalid/redacted-video.mp4",
+    "submit_time": 1794566025,
+    "start_time": 1794566025,
+    "finish_time": 1794566131,
+    "progress": "100%",
+    "properties": {
+      "input": "",
+      "upstream_model_name": "seedance-2.0-mini-t2v",
+      "origin_model_name": "seedance-2.0-mini-t2v"
+    },
+    "data": {
+      "content": {
+        "video_url": "https://example.invalid/redacted-video.mp4"
+      },
+      "id": "task_live_probe_01",
+      "model": "seedance-2.0-mini-t2v",
+      "status": "succeeded",
+      "upstream": {
+        "response": {
+          "results": [
+            {
+              "name": "[REDACTED]",
+              "outputType": "[REDACTED]",
+              "url": "https://example.invalid/redacted-video.mp4"
+            }
+          ],
+          "usage": {
+            "tokenUsage": {
+              "usage": {
+                "completion_tokens": "[REDACTED]",
+                "total_tokens": "[REDACTED]"
+              }
+            }
+          }
+        }
+      },
+      "usage": {
+        "completion_tokens": 0,
+        "total_tokens": 0
+      }
+    },
+    "request_data": "[REDACTED]",
+    "price_estimate": null
+  }
+}

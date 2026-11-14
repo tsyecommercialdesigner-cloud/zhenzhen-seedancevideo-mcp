@@ -1,0 +1,238 @@
+{
+  "date": "2026-11-14",
+  "source": "real compatibility endpoint through production queue and MCP SDK stdio",
+  "records": [
+    {
+      "file": "response-001.json",
+      "raw_sha256": "c032b283808999cb83219d1020804aa9eec94d3c317006f495d4fa300cf5072f",
+      "method": "POST",
+      "http_status": 200,
+      "model": null,
+      "status": null
+    },
+    {
+      "file": "response-002.json",
+      "raw_sha256": "5c55b129c0d670055997f342adb30696694923c538c84eddb2fa054b1b33c210",
+      "method": "POST",
+      "http_status": 200,
+      "model": "seedance-2.0-global-fast-i2v",
+      "status": "queued"
+    },
+    {
+      "file": "response-003.json",
+      "raw_sha256": "92d9c75eae4b2fc1eef19f894687fa77ead36077677c41f705ee3ea4248f6b44",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-global-fast-i2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-005.json",
+      "raw_sha256": "92d9c75eae4b2fc1eef19f894687fa77ead36077677c41f705ee3ea4248f6b44",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-global-fast-i2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-006.json",
+      "raw_sha256": "92d9c75eae4b2fc1eef19f894687fa77ead36077677c41f705ee3ea4248f6b44",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-global-fast-i2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-007.json",
+      "raw_sha256": "92d9c75eae4b2fc1eef19f894687fa77ead36077677c41f705ee3ea4248f6b44",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-global-fast-i2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-008.json",
+      "raw_sha256": "92d9c75eae4b2fc1eef19f894687fa77ead36077677c41f705ee3ea4248f6b44",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-global-fast-i2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-009.json",
+      "raw_sha256": "92d9c75eae4b2fc1eef19f894687fa77ead36077677c41f705ee3ea4248f6b44",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-global-fast-i2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-010.json",
+      "raw_sha256": "92d9c75eae4b2fc1eef19f894687fa77ead36077677c41f705ee3ea4248f6b44",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-global-fast-i2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-011.json",
+      "raw_sha256": "a4b2267691e1c20a573ebc00ebe515828e8239a63e9ed0d10c123cd24a50859b",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-global-fast-i2v",
+      "status": "SUCCESS"
+    },
+    {
+      "file": "response-012.json",
+      "raw_sha256": "8ab8ea020d0711dffb333f856243f43c130656867610345f4f8553e63ca8dc76",
+      "method": "POST",
+      "http_status": 200,
+      "model": null,
+      "status": null
+    },
+    {
+      "file": "response-013.json",
+      "raw_sha256": "cd8a73819a392ffed12957b321f10258744b4948bdb70dc8ee55e8ee559ba677",
+      "method": "POST",
+      "http_status": 200,
+      "model": null,
+      "status": null
+    },
+    {
+      "file": "response-014.json",
+      "raw_sha256": "e380f5e82c3216feedf74c39b704de1c3544cc7ecae198bca73131013d1c6fe4",
+      "method": "POST",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "queued"
+    },
+    {
+      "file": "response-015.json",
+      "raw_sha256": "2a7670b5017571ab3212ed3dd170187ee0a45a56297514d9e084fb7ad21dec40",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "NOT_START"
+    },
+    {
+      "file": "response-016.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-017.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-018.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-019.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-020.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-021.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-022.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-023.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-024.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-025.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-026.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-027.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-028.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-029.json",
+      "raw_sha256": "810b2e9a4dd2d1a575aef6e99a841cb85f4e3fb722c1048cc5fa4da7a23ba043",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-030.json",
+      "raw_sha256": "fd5ed92281d15b846a7010bb6b337cf54914cb445320f38325fc323f41c277f1",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-standard-multi",
+      "status": "SUCCESS"
+    }
+  ]
+}

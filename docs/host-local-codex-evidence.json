@@ -1,0 +1,83 @@
+{
+  "observed_at": "2026-11-14T05:24:04.262Z",
+  "host": "Codex Desktop",
+  "tool_names": [
+    "abandon_task",
+    "cancel_task",
+    "copy_artifact",
+    "find_task_by_request_key",
+    "get_capabilities",
+    "get_diagnostic",
+    "get_prompt_optimization_policy",
+    "get_service_status",
+    "get_task",
+    "list_artifacts",
+    "list_tasks",
+    "preflight_video_task",
+    "refresh_task",
+    "repair_task_materials",
+    "resume_task_tracking",
+    "retry_material_cleanup",
+    "retry_task_download",
+    "retry_unsubmitted_task",
+    "set_prompt_optimization_policy",
+    "submit_video",
+    "upscale_video",
+    "verify_artifact",
+    "wait_task"
+  ],
+  "status": {
+    "pid": 19900,
+    "phase": "running",
+    "host_count": 3,
+    "dispatch_allowed": false,
+    "generation_slots_held": 0,
+    "generation_slots_limit": 3,
+    "generation_slots_available": 3,
+    "provider": "unverified",
+    "execution_mode": "local",
+    "generation_execution": "not_implemented",
+    "storage_fault": false,
+    "stale": false,
+    "attention_count": 0,
+    "attention_tool": "list_tasks",
+    "cleanup": {}
+  },
+  "task": {
+    "task_id": "ddf1295ce6ed4b1fa053683b7801641a",
+    "stage": "queued",
+    "remote_state": "not_submitted",
+    "remote_id": null,
+    "auto_mode": "active",
+    "delivery": "none",
+    "cleanup_state": "none",
+    "cancel_requested": 0,
+    "locally_cancelled": 0,
+    "generation_slot_held": 0,
+    "version": 1,
+    "epoch": 0,
+    "attention": [],
+    "accepted": true,
+    "request_key": "host-local-acceptance-20261114",
+    "authorization": {
+      "enabled": false,
+      "policy_version": 0,
+      "source": "single_explicit_false"
+    },
+    "unverified": [
+      "SECONDS_2_0_ENUM_PROVISIONAL"
+    ],
+    "output_dir": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\host-local-acceptance-20261114\\outputs",
+    "materials": [],
+    "stale": false
+  },
+  "local_database_counts": {
+    "tasks": 1,
+    "attempts": 0,
+    "uploads": 0,
+    "remote_observations": 0,
+    "artifacts": 0,
+    "charge_observations": 0
+  },
+  "host_count_caveat": "3 leases do not prove 3 distinct Hosts; per-Host tool results required"
+}

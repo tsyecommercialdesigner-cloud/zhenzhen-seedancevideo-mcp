@@ -1,0 +1,86 @@
+{
+  "date": "2026-11-14",
+  "source": "real compatibility endpoint through production queue and MCP SDK stdio",
+  "records": [
+    {
+      "file": "response-001.json",
+      "raw_sha256": "bdd26b0df34db735fffc3772dcc291a9e009236e2301af2d26615b1f6f7a8fca",
+      "method": "POST",
+      "http_status": 200,
+      "model": "seedance-2.0-mini-t2v",
+      "status": "queued"
+    },
+    {
+      "file": "response-002.json",
+      "raw_sha256": "eee46f5b0b39cba886cc943711619c01023a2f8b08097532ae2ded271268ee29",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-mini-t2v",
+      "status": "NOT_START"
+    },
+    {
+      "file": "response-003.json",
+      "raw_sha256": "6a65655f84a4c2fc9167d3000fbe8d31c915fbe2531d324c94caf7f15d51afd4",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-mini-t2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-004.json",
+      "raw_sha256": "6a65655f84a4c2fc9167d3000fbe8d31c915fbe2531d324c94caf7f15d51afd4",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-mini-t2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-005.json",
+      "raw_sha256": "6a65655f84a4c2fc9167d3000fbe8d31c915fbe2531d324c94caf7f15d51afd4",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-mini-t2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-006.json",
+      "raw_sha256": "6a65655f84a4c2fc9167d3000fbe8d31c915fbe2531d324c94caf7f15d51afd4",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-mini-t2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-007.json",
+      "raw_sha256": "6a65655f84a4c2fc9167d3000fbe8d31c915fbe2531d324c94caf7f15d51afd4",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-mini-t2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-008.json",
+      "raw_sha256": "6a65655f84a4c2fc9167d3000fbe8d31c915fbe2531d324c94caf7f15d51afd4",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-mini-t2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-009.json",
+      "raw_sha256": "6a65655f84a4c2fc9167d3000fbe8d31c915fbe2531d324c94caf7f15d51afd4",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-mini-t2v",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "file": "response-010.json",
+      "raw_sha256": "ba34598c9070d974fceb859b2b609dc17a47f6219f36b05045afa5c504e467cd",
+      "method": "GET",
+      "http_status": 200,
+      "model": "seedance-2.0-mini-t2v",
+      "status": "SUCCESS"
+    }
+  ]
+}

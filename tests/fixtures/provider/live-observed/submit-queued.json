@@ -1,0 +1,9 @@
+{
+  "id": "task_live_probe_01",
+  "task_id": "task_live_probe_01",
+  "object": "video",
+  "model": "seedance-2.0-mini-t2v",
+  "status": "queued",
+  "progress": 0,
+  "created_at": 1794566025
+}

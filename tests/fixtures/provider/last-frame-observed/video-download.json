@@ -1,0 +1,13 @@
+{
+  "kind": "video",
+  "status": 200,
+  "size": 823227,
+  "sha256": "674d710c8443a67d2e8d7f9ea82c7e920ab6e85106357ce02cb40a81b847aed9",
+  "credential": false,
+  "headers": {
+    "accept-ranges": "bytes",
+    "content-length": "823227",
+    "content-type": "video/mp4"
+  },
+  "redirect_evidence": "unverified: pinned network URL comparison is not redirect evidence"
+}

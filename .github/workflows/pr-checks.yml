@@ -1,0 +1,76 @@
+name: PR checks
+
+on:
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.scope.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: scope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -n "$BASE_SHA" ] && [ -n "$HEAD_SHA" ] && ! git diff --name-only "$BASE_SHA...$HEAD_SHA" | grep -Eiv '\.(md|txt)$'; then
+            echo 'docs_only=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'docs_only=false' >> "$GITHUB_OUTPUT"
+          fi
+  documentation:
+    needs: changes
+    if: github.event_name == 'pull_request' && github.base_ref == 'dev' && needs.changes.outputs.docs_only == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check diff formatting and secrets
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --check "$BASE_SHA...$HEAD_SHA"
+          if git diff --no-color "$BASE_SHA...$HEAD_SHA" | grep -Ei '^\+.*(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9_-]{24,})'; then exit 1; fi
+  windows:
+    needs: changes
+    if: github.event_name != 'pull_request' || github.base_ref == 'main' || needs.changes.outputs.docs_only != 'true'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install locked environment
+        run: uv sync --frozen
+      - name: Check lint and formatting
+        run: |
+          uv run --frozen ruff check .
+          uv run --frozen ruff format --check .
+      - name: Run isolated tests
+        shell: pwsh
+        run: uv run --frozen pytest -q --basetemp "$env:RUNNER_TEMP\sd-tests"
+      - name: Build packages
+        run: uv build --offline
+      - name: Record candidate identity and checksums
+        shell: pwsh
+        run: |
+          git rev-parse HEAD | Set-Content dist/SOURCE_COMMIT.txt -Encoding ascii
+          git rev-parse 'HEAD^{tree}' | Set-Content dist/SOURCE_TREE.txt -Encoding ascii
+          Get-FileHash dist/*.whl,dist/*.tar.gz -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $([IO.Path]::GetFileName($_.Path))" } | Set-Content dist/SHA256SUMS.txt -Encoding ascii
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-candidate-${{ github.run_id }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30

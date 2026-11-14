@@ -1,0 +1,961 @@
+{
+  "date": "2026-11-14",
+  "scope": "Existing evidence only. Runtime projection is checked against source classification, not independent supplier proof. Each paid ordinal proves only its documented configuration.",
+  "public_snapshot_sha256": "2ABC0CD064B2203F8C8BC2D4FA8F60E089E02D4B8093A865508A1E9F89181B8A",
+  "models": [
+    {
+      "model": "seedance-2.0-standard-t2v",
+      "region": "domestic",
+      "tier": "standard",
+      "kind": "t2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "status": "not_applicable"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-standard-t2v"
+    },
+    {
+      "model": "seedance-2.0-standard-i2v",
+      "region": "domestic",
+      "tier": "standard",
+      "kind": "i2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "images_min": 1,
+        "images_max": 2,
+        "formats": [
+          "jpg",
+          "png",
+          "webp"
+        ],
+        "size_limit_bytes": 30000000
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-standard-i2v"
+    },
+    {
+      "model": "seedance-2.0-standard-multi",
+      "region": "domestic",
+      "tier": "standard",
+      "kind": "multi",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "maxima": [
+          9,
+          3,
+          3
+        ],
+        "order": [
+          "image_url",
+          "video_url",
+          "audio_url"
+        ],
+        "aliases": "unsupported",
+        "duration_and_size": "unverified"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default",
+        "AV precise duration/size",
+        "upstream alias composition; local canonical content only"
+      ],
+      "canonical_content_only": true,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [
+        12
+      ],
+      "user_supplied_model_page": "seedance-2.0-standard-multi"
+    },
+    {
+      "model": "seedance-2.0-fast-t2v",
+      "region": "domestic",
+      "tier": "fast",
+      "kind": "t2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "status": "not_applicable"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-fast-t2v"
+    },
+    {
+      "model": "seedance-2.0-fast-i2v",
+      "region": "domestic",
+      "tier": "fast",
+      "kind": "i2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "images_min": 1,
+        "images_max": 2,
+        "formats": [
+          "jpg",
+          "png",
+          "webp"
+        ],
+        "size_limit_bytes": 30000000
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-fast-i2v"
+    },
+    {
+      "model": "seedance-2.0-fast-multi",
+      "region": "domestic",
+      "tier": "fast",
+      "kind": "multi",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "maxima": [
+          9,
+          3,
+          3
+        ],
+        "order": [
+          "image_url",
+          "video_url",
+          "audio_url"
+        ],
+        "aliases": "unsupported",
+        "duration_and_size": "unverified"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default",
+        "AV precise duration/size",
+        "domestic Fast audio exception",
+        "upstream alias composition; local canonical content only"
+      ],
+      "canonical_content_only": true,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-fast-multi"
+    },
+    {
+      "model": "seedance-2.0-mini-t2v",
+      "region": "domestic",
+      "tier": "mini",
+      "kind": "t2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "status": "not_applicable"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [
+        1,
+        2,
+        13
+      ],
+      "user_supplied_model_page": "seedance-2.0-mini-t2v"
+    },
+    {
+      "model": "seedance-2.0-mini-i2v",
+      "region": "domestic",
+      "tier": "mini",
+      "kind": "i2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "images_min": 1,
+        "images_max": 2,
+        "formats": [
+          "jpg",
+          "png",
+          "webp"
+        ],
+        "size_limit_bytes": 30000000
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [
+        6
+      ],
+      "user_supplied_model_page": "seedance-2.0-mini-i2v"
+    },
+    {
+      "model": "seedance-2.0-mini-multi",
+      "region": "domestic",
+      "tier": "mini",
+      "kind": "multi",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "maxima": [
+          9,
+          3,
+          3
+        ],
+        "order": [
+          "image_url",
+          "video_url",
+          "audio_url"
+        ],
+        "aliases": "unsupported",
+        "duration_and_size": "unverified"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default",
+        "AV precise duration/size",
+        "upstream alias composition; local canonical content only"
+      ],
+      "canonical_content_only": true,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-mini-multi"
+    },
+    {
+      "model": "seedance-2.0-global-standard-t2v",
+      "region": "global",
+      "tier": "standard",
+      "kind": "t2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "status": "not_applicable"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-global-standard-t2v"
+    },
+    {
+      "model": "seedance-2.0-global-standard-i2v",
+      "region": "global",
+      "tier": "standard",
+      "kind": "i2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "images_min": 1,
+        "images_max": 2,
+        "formats": [
+          "jpg",
+          "png",
+          "webp"
+        ],
+        "size_limit_bytes": 30000000
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-global-standard-i2v"
+    },
+    {
+      "model": "seedance-2.0-global-standard-multi",
+      "region": "global",
+      "tier": "standard",
+      "kind": "multi",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "maxima": [
+          9,
+          3,
+          3
+        ],
+        "order": [
+          "image_url",
+          "video_url",
+          "audio_url"
+        ],
+        "aliases": "unsupported",
+        "duration_and_size": "unverified"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default",
+        "AV precise duration/size",
+        "upstream alias composition; local canonical content only"
+      ],
+      "canonical_content_only": true,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-global-standard-multi"
+    },
+    {
+      "model": "seedance-2.0-global-fast-t2v",
+      "region": "global",
+      "tier": "fast",
+      "kind": "t2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "status": "not_applicable"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-global-fast-t2v"
+    },
+    {
+      "model": "seedance-2.0-global-fast-i2v",
+      "region": "global",
+      "tier": "fast",
+      "kind": "i2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "images_min": 1,
+        "images_max": 2,
+        "formats": [
+          "jpg",
+          "png",
+          "webp"
+        ],
+        "size_limit_bytes": 30000000
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [
+        11
+      ],
+      "user_supplied_model_page": "seedance-2.0-global-fast-i2v"
+    },
+    {
+      "model": "seedance-2.0-global-fast-multi",
+      "region": "global",
+      "tier": "fast",
+      "kind": "multi",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "maxima": [
+          9,
+          3,
+          3
+        ],
+        "order": [
+          "image_url",
+          "video_url",
+          "audio_url"
+        ],
+        "aliases": "unsupported",
+        "duration_and_size": "unverified"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default",
+        "AV precise duration/size",
+        "upstream alias composition; local canonical content only"
+      ],
+      "canonical_content_only": true,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-global-fast-multi"
+    },
+    {
+      "model": "seedance-2.0-global-mini-t2v",
+      "region": "global",
+      "tier": "mini",
+      "kind": "t2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "status": "not_applicable"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-global-mini-t2v"
+    },
+    {
+      "model": "seedance-2.0-global-mini-i2v",
+      "region": "global",
+      "tier": "mini",
+      "kind": "i2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "images_min": 1,
+        "images_max": 2,
+        "formats": [
+          "jpg",
+          "png",
+          "webp"
+        ],
+        "size_limit_bytes": 30000000
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-global-mini-i2v"
+    },
+    {
+      "model": "seedance-2.0-global-mini-multi",
+      "region": "global",
+      "tier": "mini",
+      "kind": "multi",
+      "duration": {
+        "minimum": 4,
+        "maximum": 15,
+        "type": "integer_string",
+        "status": "provisional"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "maxima": [
+          9,
+          3,
+          3
+        ],
+        "order": [
+          "image_url",
+          "video_url",
+          "audio_url"
+        ],
+        "aliases": "unsupported",
+        "duration_and_size": "unverified"
+      },
+      "unverified": [
+        "fixed duration enumeration remains provisional",
+        "seed integer/range/default",
+        "AV precise duration/size",
+        "upstream alias composition; local canonical content only"
+      ],
+      "canonical_content_only": true,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.0-global-mini-multi"
+    },
+    {
+      "model": "seedance-2.5-standard-t2v",
+      "region": "domestic",
+      "tier": "standard",
+      "kind": "t2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 30,
+        "type": "integer_string",
+        "status": "confirmed"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "status": "not_applicable"
+      },
+      "unverified": [
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [
+        4,
+        7
+      ],
+      "user_supplied_model_page": "seedance-2.5-standard-t2v"
+    },
+    {
+      "model": "seedance-2.5-standard-i2v",
+      "region": "domestic",
+      "tier": "standard",
+      "kind": "i2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 30,
+        "type": "integer_string",
+        "status": "confirmed"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "images_min": 1,
+        "images_max": 2,
+        "formats": [
+          "jpg",
+          "png",
+          "webp"
+        ],
+        "size_limit_bytes": "unverified"
+      },
+      "unverified": [
+        "seed integer/range/default",
+        "image size"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.5-standard-i2v"
+    },
+    {
+      "model": "seedance-2.5-standard-multi",
+      "region": "domestic",
+      "tier": "standard",
+      "kind": "multi",
+      "duration": {
+        "minimum": 4,
+        "maximum": 30,
+        "type": "integer_string",
+        "status": "confirmed"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "maxima": [
+          30,
+          10,
+          10
+        ],
+        "order": [
+          "image_url",
+          "video_url",
+          "audio_url"
+        ],
+        "aliases": "unsupported",
+        "av_seconds_min": 2,
+        "av_seconds_max": 30,
+        "av_seconds_total_max": 30
+      },
+      "unverified": [
+        "seed integer/range/default",
+        "image size",
+        "upstream alias composition; local canonical content only"
+      ],
+      "canonical_content_only": true,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.5-standard-multi"
+    },
+    {
+      "model": "seedance-2.5-standard-draft-to-video",
+      "region": "domestic",
+      "tier": "standard",
+      "kind": "draft-to-video",
+      "duration": {
+        "status": "inherited from draft; seconds omitted"
+      },
+      "seed": {
+        "status": "not_applicable"
+      },
+      "media": {
+        "status": "not_applicable"
+      },
+      "unverified": [
+        "expiry anchor",
+        "external account verification",
+        "default output format"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [
+        8
+      ],
+      "user_supplied_model_page": "seedance-2.5-standard-draft-to-video"
+    },
+    {
+      "model": "seedance-2.5-global-standard-t2v",
+      "region": "global",
+      "tier": "standard",
+      "kind": "t2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 30,
+        "type": "integer_string",
+        "status": "confirmed"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "status": "not_applicable"
+      },
+      "unverified": [
+        "seed integer/range/default"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [
+        9
+      ],
+      "user_supplied_model_page": "seedance-2.5-global-standard-t2v"
+    },
+    {
+      "model": "seedance-2.5-global-standard-i2v",
+      "region": "global",
+      "tier": "standard",
+      "kind": "i2v",
+      "duration": {
+        "minimum": 4,
+        "maximum": 30,
+        "type": "integer_string",
+        "status": "confirmed"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "images_min": 1,
+        "images_max": 2,
+        "formats": [
+          "jpg",
+          "png",
+          "webp"
+        ],
+        "size_limit_bytes": "unverified"
+      },
+      "unverified": [
+        "seed integer/range/default",
+        "image size"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.5-global-standard-i2v"
+    },
+    {
+      "model": "seedance-2.5-global-standard-multi",
+      "region": "global",
+      "tier": "standard",
+      "kind": "multi",
+      "duration": {
+        "minimum": 4,
+        "maximum": 30,
+        "type": "integer_string",
+        "status": "confirmed"
+      },
+      "seed": {
+        "type": "number",
+        "range_and_default": "unverified"
+      },
+      "media": {
+        "maxima": [
+          30,
+          10,
+          10
+        ],
+        "order": [
+          "image_url",
+          "video_url",
+          "audio_url"
+        ],
+        "aliases": "unsupported",
+        "av_seconds_min": 2,
+        "av_seconds_max": 30,
+        "av_seconds_total_max": 30
+      },
+      "unverified": [
+        "seed integer/range/default",
+        "image size",
+        "upstream alias composition; local canonical content only"
+      ],
+      "canonical_content_only": true,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [],
+      "user_supplied_model_page": "seedance-2.5-global-standard-multi"
+    },
+    {
+      "model": "seedance-2.5-global-standard-draft-to-video",
+      "region": "global",
+      "tier": "standard",
+      "kind": "draft-to-video",
+      "duration": {
+        "status": "inherited from draft; seconds omitted"
+      },
+      "seed": {
+        "status": "not_applicable"
+      },
+      "media": {
+        "status": "not_applicable"
+      },
+      "unverified": [
+        "expiry anchor",
+        "external account verification",
+        "default output format"
+      ],
+      "canonical_content_only": false,
+      "sources": [
+        "user-confirmed per-model contract in conversation and provider-api-contracts spec",
+        "historical public snapshot conflicts retained in provider-contract-evidence.md"
+      ],
+      "real_paid_ordinals": [
+        10
+      ],
+      "user_supplied_model_page": "seedance-2.5-global-standard-draft-to-video"
+    }
+  ]
+}

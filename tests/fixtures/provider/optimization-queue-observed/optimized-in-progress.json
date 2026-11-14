@@ -1,0 +1,51 @@
+{
+  "code": "success",
+  "message": "",
+  "data": {
+    "id": 0,
+    "created_at": 0,
+    "updated_at": 0,
+    "task_id": "task_optimized_queue_01",
+    "platform": "[REDACTED]",
+    "source": "[REDACTED]",
+    "user_id": 0,
+    "group": "[REDACTED]",
+    "channel_id": 0,
+    "quota": 0,
+    "billing_source": "[REDACTED]",
+    "action": "[REDACTED]",
+    "status": "IN_PROGRESS",
+    "fail_reason": "",
+    "submit_time": 0,
+    "start_time": 0,
+    "finish_time": 0,
+    "progress": "50%",
+    "properties": {
+      "input": "",
+      "upstream_model_name": "[REDACTED]",
+      "origin_model_name": "seedance-2.0-mini-t2v",
+      "prompt_enhancement": {
+        "original_prompt": "[REDACTED]",
+        "enhanced_prompt": "[REDACTED]",
+        "quota": 0,
+        "calls": [
+          {
+            "request_id": "[REDACTED]",
+            "model": "deepseek/deepseek-v4.1-flash",
+            "quota": 0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0
+          }
+        ]
+      }
+    },
+    "data": {
+      "content": {},
+      "id": "task_optimized_queue_01",
+      "model": "seedance-2.0-mini-t2v",
+      "status": "processing"
+    },
+    "request_data": "[REDACTED]",
+    "price_estimate": null
+  }
+}
