@@ -269,3 +269,15 @@ Windows 对带 KILL_ON_JOB_CLOSE 标志的 Job 最后句柄关闭行为，以及
 - 功能 PR #6 与版本准备 PR #7 的 Windows 检查通过并合入 dev；发布 PR #8 的 Windows 隔离测试、检查及构建通过，CI run 43584559133 产生候选。合并 main 的提交 `a1af92b7a021f27e7a1f3115f7ae015d74ba7be6` 的树 `8d8b8d4dc01b7379b539e1a590905ab5bd093591` 与候选树一致；CI `SOURCE_COMMIT.txt` 为临时 PR 合并提交 `1280a902250338d5d7f6f861db468070f04ee268`。
 - 预发行 [v0.1.0.dev1](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev1) 标签指向上述 main 提交；远端 wheel SHA-256 `1632657b1c61cbdfae4b9f4679b90155d2e0bc46a83c41c5893361173927fed1`，源码包 `38f3698c7b105fdb31b6c1858288c2f7c4a60ed8da109373956f871240649758`，与候选摘要一致。两包包含协议检查模块，定向敏感信息扫描通过；wheel RECORD 的随机摘要触发通用 token 模式误报，作为摘要清单排除后复核。
 - 本轮没有真实供应商调用或新 Host 验收，v0.1.0.dev1 发布资产独立安装运行未单独验证；完整产物集合及部分模型仍待核实，已关闭的 Job 生命周期调查不重开。候选下载清理状态见资源清单。
+
+## 2026-11-14 CI 来源证据与回填分类（未完成）
+
+- 已为完整 Windows 检查增加证据生成步骤，记录源提交、完整树、排除指定文档后的操作输入指纹、工作流和运行 ID、Python／uv 及 runner 镜像信息；当前分类暂时全部回退完整检查。证据输出本身不证明来源可信，轻量回填判断、Release 核验、受信任历史运行验证及必需状态汇总尚未实现。
+- 隔离测试首次因测试模块导入失败中止，调整为按路径导入后复跑 `tests/test_ci_evidence.py`：1 passed；合成环境字段生成检查和工作流 YAML 解析通过，相关 Ruff 检查及工程／Git 主规范严格校验通过。合成记录不是实际 GitHub Actions 验收，未执行远端 CI、全量测试或发布。资源清理见清单；本次尚未提交、推送或合并。
+
+## 2026-11-14 CI 回填门禁续作（本地验证）
+
+- 实现保守的已知用途及内容分类、实际 Release 标签／完整提交及资产摘要核对、GitHub 已合并同仓库成功运行及未过期证据查询、提交树和输入指纹核验，以及 Python、uv、Git、GitHub CLI 和 runner 镜像匹配。缺失证据、API 不可用、输入／环境变化和未知内容均回退完整检查；已识别的 Release 事实冲突失败。复用仅限检查结果，不复用源码包。
+- 用户明确 `MANUAL.md` 由 Agent 和人工审查，CI 不审查其内容；其余文件仍受分类、Release 与证据核验约束。手册变化后不能复用包含旧手册的源码包；稳定 `windows` 状态及摘要报告实际范围。CI Action 固定到提交以约束检查输入。
+- 相关隔离测试 `tests/test_ci_backfill.py tests/test_ci_evidence.py`：12 passed；Ruff check／format 通过（175 文件）、工作流 YAML 与 PowerShell 解析通过、离线构建通过，工程及 Git 主规范严格校验通过。本地全量隔离测试 573 passed in 550.44s；测试启动后继续收紧了 CI 脚本和相应测试，故全量结果不作为最终 CI 脚本快照的通过依据，最新定向测试已复跑，最终提交由实际远端 CI 完整复验。
+- 首轮 Release 摘要模拟因 Windows 换行导致测试夹具摘要不一致而失败，改为固定字节后通过。可信历史运行正负例为合成 GitHub API 数据，尚未证明真实远端轻量复用成功；无证据的首次部署保守运行完整检查。未调用真实供应商，资源清理见清单。

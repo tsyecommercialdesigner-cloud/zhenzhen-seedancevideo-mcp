@@ -7,68 +7,90 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  pull-requests: read
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      docs_only: ${{ steps.scope.outputs.docs_only }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - id: scope
-        shell: bash
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          if [ -n "$BASE_SHA" ] && [ -n "$HEAD_SHA" ] && ! git diff --name-only "$BASE_SHA...$HEAD_SHA" | grep -Eiv '\.(md|txt)$'; then
-            echo 'docs_only=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'docs_only=false' >> "$GITHUB_OUTPUT"
-          fi
-  documentation:
-    needs: changes
-    if: github.event_name == 'pull_request' && github.base_ref == 'dev' && needs.changes.outputs.docs_only == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Check diff formatting and secrets
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          git diff --check "$BASE_SHA...$HEAD_SHA"
-          if git diff --no-color "$BASE_SHA...$HEAD_SHA" | grep -Ei '^\+.*(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9_-]{24,})'; then exit 1; fi
   windows:
-    needs: changes
-    if: github.event_name != 'pull_request' || github.base_ref == 'main' || needs.changes.outputs.docs_only != 'true'
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
       - name: Install locked environment
         run: uv sync --frozen
+      - name: Declare manual review boundary
+        shell: pwsh
+        run: |
+          'MANUAL.md content review is assigned to the Agent and a human; CI does not attest it.' >> $env:GITHUB_STEP_SUMMARY
+      - name: Classify and verify trusted evidence
+        id: gate
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # The verifier cannot authorize its own changes or workflow changes.
+          if (-not $env:BASE_SHA -or -not $env:HEAD_SHA) {
+            'reuse=false' >> $env:GITHUB_OUTPUT
+            "### CI scope`nFull verification: no PR identity." >> $env:GITHUB_STEP_SUMMARY
+            exit 0
+          }
+          git diff --check "$env:BASE_SHA...$env:HEAD_SHA" -- . ':(exclude)MANUAL.md'
+          if ($LASTEXITCODE -ne 0) { throw 'Diff formatting failed' }
+          $patch = git diff --no-color "$env:BASE_SHA...$env:HEAD_SHA" -- . ':(exclude)MANUAL.md'
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect diff' }
+          if ($patch | Where-Object { $_ -match '^\+.*(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9_-]{24,}|[?&](X-Tos-Signature|X-Amz-Signature)=)' }) {
+            throw 'Secret pattern detected in added content'
+          }
+          # Do not execute PR Python with a token unless every changed path is
+          # one of the four non-executable review inputs.
+          $allowed = @('README.md', 'MANUAL.md', 'docs/test-resource-register.json', 'docs/verification-add-local-video-generation-service.md')
+          $changed = @(git diff --name-only --no-renames $env:BASE_SHA $env:HEAD_SHA)
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to enumerate diff' }
+          if ($changed.Count -eq 0 -or @($changed | Where-Object { $_ -cnotin $allowed }).Count -gt 0) {
+            'reuse=false' >> $env:GITHUB_OUTPUT
+            "### CI scope`nFull verification: non-fact input changed." >> $env:GITHUB_STEP_SUMMARY
+            exit 0
+          }
+          git diff --quiet $env:BASE_SHA $env:HEAD_SHA -- .github/workflows/pr-checks.yml scripts/ci_backfill.py scripts/ci_evidence.py
+          if ($LASTEXITCODE -ne 0) {
+            'reuse=false' >> $env:GITHUB_OUTPUT
+            "### CI scope`nFull verification: gate inputs changed." >> $env:GITHUB_STEP_SUMMARY
+            exit 0
+          }
+          uv run --frozen python scripts/ci_backfill.py
+          if ($LASTEXITCODE -ne 0) { throw 'CI gate failed' }
       - name: Check lint and formatting
+        if: steps.gate.outputs.reuse != 'true'
+        shell: pwsh
         run: |
           uv run --frozen ruff check .
+          if ($LASTEXITCODE -ne 0) { throw 'Ruff check failed' }
           uv run --frozen ruff format --check .
+          if ($LASTEXITCODE -ne 0) { throw 'Ruff format check failed' }
       - name: Run isolated tests
+        if: steps.gate.outputs.reuse != 'true'
         shell: pwsh
         run: uv run --frozen pytest -q --basetemp "$env:RUNNER_TEMP\sd-tests"
       - name: Build packages
+        if: steps.gate.outputs.reuse != 'true'
         run: uv build --offline
       - name: Record candidate identity and checksums
+        if: steps.gate.outputs.reuse != 'true'
         shell: pwsh
         run: |
           git rev-parse HEAD | Set-Content dist/SOURCE_COMMIT.txt -Encoding ascii
           git rev-parse 'HEAD^{tree}' | Set-Content dist/SOURCE_TREE.txt -Encoding ascii
           Get-FileHash dist/*.whl,dist/*.tar.gz -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $([IO.Path]::GetFileName($_.Path))" } | Set-Content dist/SHA256SUMS.txt -Encoding ascii
-      - uses: actions/upload-artifact@v4
+          uv run --frozen python scripts/ci_evidence.py dist/VERIFICATION_EVIDENCE.json
+          if ($LASTEXITCODE -ne 0) { throw 'Verification evidence generation failed' }
+          '### CI scope: full Windows lint, format, tests and build' >> $env:GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: steps.gate.outputs.reuse != 'true'
         with:
           name: windows-candidate-${{ github.run_id }}
           path: dist/*

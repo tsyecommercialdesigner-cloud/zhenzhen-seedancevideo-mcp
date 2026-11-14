@@ -20,6 +20,10 @@ zhenzhen-seedance-video = "zhenzhen_seedance_video.cli:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/zhenzhen_seedance_video"]
 
+[[tool.uv.index]]
+url = "https://pypi.org/simple"
+default = true
+
 [tool.hatch.build.targets.sdist]
 only-include = ["src", "docs", "pyproject.toml", "uv.lock", ".python-version", "README.md", "MANUAL.md", ".env.example"]
 
@@ -36,12 +40,9 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ASYNC"]
 
-[[tool.uv.index]]
-url = "https://pypi.org/simple"
-default = true
-
 [dependency-groups]
 dev = [
+    "markdown-it-py==3.0.0",
     "pytest>=9.2.0",
     "pytest-asyncio>=1.5.0",
     "ruff>=0.17.5",
