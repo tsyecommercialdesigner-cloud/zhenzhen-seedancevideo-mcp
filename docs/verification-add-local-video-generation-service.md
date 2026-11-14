@@ -1,5 +1,19 @@
 # OpenSpec 验证：add-local-video-generation-service
 
+## 本地协议检查与 DSH 配置核对（2026-11-14）
+
+新增发行包模块 `zhenzhen_seedance_video.protocol_probe`：独立临时状态根，仅允许 local，调用 SDK stdio 初始化、发现、状态与能力查询，不提交任务、不调用供应商；失败保留隔离目录并提示，不打印密钥或原始异常。当前已发布 v0.1.0.dev0 不含模块，待后续发行后才能按手册命令使用。
+
+本机 DSH 文档镜像 `dsh-plugin-guide` 0.3.39 的 MCP 指南和配置目录给出 `insert`、插件名、`serverName`、`transport`、`command`、`args`；手册 YAML 用本机 yaml 模块解析并核对字段。Desktop 此前有实际 Host 发现证据，新 uv 配置片段未直接接入；web 和 multica 的配置机制可见，具体接入尚未实测。没有修改 Host 配置。
+
+首次探针测试由于 SDK v2 字段使用旧驼峰名失败，修正为 `protocol_version` 后重跑；provider 拒绝测试始终通过。最终 `tests/test_protocol_probe.py` 2 passed；Ruff check/format 通过；离线 sdist、wheel 构建成功且包含模块；JSON/TOML/YAML 解析和本地链接检查通过。未做真实供应商或实际 Host 新接入，未做全量测试或发布。测试及构建临时资源清理见资源清单。
+
+## 成员手册修订检查（2026-11-14）
+
+对照手册主规范、编写指南、当前实现与实际验收记录，修订 MANUAL：增加固定标签/完整 SHA clone、安装目录凭据规则、Codex TOML 与 Claude Desktop JSON、只读 Host 检查、升级回滚及排障；修正干净 Windows 和实际 Host 证据状态。保留产物集合未知、Job 调查关闭但限制未修复、跨版本升级未验证。
+
+本轮解析3个 PowerShell 代码块、1个 JSON 和1个 TOML 块，核对本地文档链接；git diff --check 及11项主规范严格校验通过。未执行 clone、安装、Host 配置修改或供应商调用。发行包没有独立成员协议检查脚本，当前手册提供 Host 只读步骤但无法给出统一退出码或自动超时；DSH Desktop 完整 YAML 补丁及 web/Multica、其他 CLI／Shell 组合的具体适配未能从现有脱敏证据核实，手册明确未验证，不虚构示例。本次未证明指南全部要求已满足。
+
 ## 主规范同步与归档（2026-11-14）
 
 用户明确授权后，八项业务主规范共83条需求同步至openspec/specs；逐份核对Purpose及需求正文与delta一致，主规范无delta操作标题。11项主规范严格校验通过，归档前change严格校验通过，71/71任务完成。归档位置： [2026-11-14-add-local-video-generation-service](../openspec/changes/archive/2026-11-14-add-local-video-generation-service/archive-record.md)。
@@ -200,3 +214,52 @@ Windows 对带 KILL_ON_JOB_CLOSE 标志的 Job 最后句柄关闭行为，以及
 验证环境为本机Windows及隔离测试，资源清理状态见test-resource-register.json。
 
 清理：全量测试结束且专用进程退出后，核验321处pytest符号链接及其目标均在本轮验证目录内，逐一解除后复扫无重解析点，删除专用测试与构建目录；保留付费任务库及两份视频。先前af30659目录清理异常仍独立保留为未能确认目标影响。
+## 2026-11-14 手册全面核对及本地协议检查
+
+- 对照 `openspec/specs/manual-writing/spec.md` 和 `guide.md` 核对 MANUAL 十节、固定版本、安装与不覆盖配置、工具清单、DSH 三 profile 适用范围、升级回滚及验证边界；更新工具手册中过时的实际 Host 和 SUCCESS／费用响应表述。23 项工具名称与 `frontend.py` 一致，完整产物集合仍待核实，已关闭的 Job 生命周期调查不重开。
+- 本机静态检查：5 个 MANUAL PowerShell 代码块通过 PowerShell 语法解析；Claude JSON 和 Codex TOML 均可解析且命令参数相同；使用本机 DSH desktop 的 yaml 解析库检查 YAML 和字段、参数，核对插件文档的 stdio 格式；本地文档链接路径存在。语法检查不等于目标 Host 连接通过，DSH web／multica 仍未实测。
+- `uv run --frozen pytest -q tests/test_protocol_probe.py --basetemp .cache/manual-audit-20261114/tests`：2 passed；添加资源模板发现后首次复测为 1 failed、1 passed，原因是 SDK Python 字段使用 `resource_templates`，已修正；最终同一测试使用 `tests-final` 目录复跑 2 passed，退出码 0。`ruff check` 和 `ruff format --check` 对两个检查脚本文件通过。
+- `uv build --offline --out-dir .cache/manual-audit-20261114/build` 退出码 0，静态检查 sdist 与 wheel 均包含 `protocol_probe.py`。该模块处于当前未发布工作区，发布标签 `v0.1.0.dev0` 不含此模块；本次没有对新构建包执行干净环境安装或实际 Host 联调。
+- 本次仅 local 模式和合成配置，不调用供应商、不修改 Host 配置；未重新运行全量测试，不将历史验证扩展到不同构建输入。临时资源及清理状态见 `test-resource-register.json`。
+
+## 2026-11-14 DSH 代理旁路示例修订
+
+- `MANUAL.md` 的 DSH stdio 示例补充 `NO_PROXY` 和 `no_proxy`，说明合并既有旁路项及其他环境变量，并区分 MCP 供应商网络策略和 Host 子进程兼容设置。
+- 使用本机 DSH desktop 自带的 `yaml` 包解析手册中的 YAML 块，检查插件名、服务名、stdio、命令、参数数量及两个旁路值，退出码 0；`git diff --check` 通过。检查在内存中完成，未产生专用测试资源。
+- 此次未修改 Host 配置、启动实际 Host 或调用供应商；新增旁路值在 Windows 上的实际传递和修复效果未验证。既有 Desktop 验收不覆盖本次示例变更，web／multica 仍未实测。
+
+## 2026-11-14 DSH MCP 插件 local 环境旁路验证
+
+- 使用本机 DSH 0.2.1-rc.5 的 `@deepseek-ai/dsh-mcp-client` 实际插件及其 stdio 启动链，隔离插件宿主用内存工具注册表，配置取自 MANUAL 的 YAML，仅替换隔离安装路径并设置测试宿主参数。隔离源码副本的入口只记录旁路变量，使用占位密钥、独立 `LOCALAPPDATA` 和 local 模式；未更改正式安装或任何 Host 配置。
+- 人为给父进程设置含 `[::1]` 的旁路值：空 `env` 对照组中子进程仍读到该项；手册覆盖组读取到 `localhost,127.0.0.1,::1`；自定义旁路组在两个值中附加 `internal.example.invalid` 后，子进程也读到该项。Windows 子进程实际枚举出一个 `NO_PROXY` 条目，但 Python 的大小写两种查找均得到相同预期值。三组均注册 23 个工具并成功调用 `get_service_status`，结果为 `execution_mode=local`、`dispatch_allowed=false`、`storage_fault=false`。
+- 该检查覆盖插件实际启动与工具注册，不是完整 DSH Desktop 图形宿主联调；对照组在本项目中也能启动，未复现 HTTP 客户端报错，不能据此断言此变通修复所有版本。未调用供应商；完整产物集合仍待核实，已关闭的 Job 调查未重开。隔离目录与进程清理状态见资源清单。
+
+## 2026-11-14 实际 DSH Desktop 旁路验收
+
+- 建立独立源码及依赖安装、local 模式占位密钥和隔离状态目录；SDK stdio 预检输出 `protocol=2025-11-25 tools=23 resources=0 templates=0 prompts=0 local=ok`，未调用供应商。隔离入口仅记录 NO_PROXY 变量及自身 PID，不记录其他环境变量。
+- 经用户确认，在 Desktop 的 `cordis.patch.yml` 追加 `seedance-proxy-acceptance` 临时服务项；修改前已备份并保留原 ACL，修改后解析 YAML、确认仅一个测试服务且原始内容保留。
+- 用户重启 Desktop 后实际调用状态和能力工具：后端 PID 32200、local、派发关闭、存储正常，发现 Seedance 26 个模型及独立超分。隔离入口 PID 41752 记录到一个 `NO_PROXY` 环境条目，大小写两种读取均为 `localhost,127.0.0.1,::1`。Desktop 重写配置换行为 LF，按唯一标记仅移除测试项并保留当前其余内容。用户正常退出后，两个记录的 PID、隔离路径相关进程均不存在，Desktop YAML 解析通过且临时项不存在。未调用供应商；最终资源清理状态见资源清单。
+
+## 2026-11-14 手册及 DSH 验收一致性复核
+
+- 对照手册主规范、指南与上述证据，说明实际 Desktop 检查采用临时服务名、隔离路径、额外环境变量及入口探针；自定义旁路仅在插件宿主验证，未复现 HTTP 错误。web／multica 仍未实测。
+- 核对当前协议检查源码与手册输出、120 秒时限、local 限制一致；`git cat-file -e v0.1.0.dev0:src/zhenzhen_seedance_video/protocol_probe.py` 退出 128，确认该发布标签不包含脚本。当前脚本仍是未发布工作区内容，不能将后续离线构建等同于正式 Release。
+- 5 个 PowerShell 代码块语法解析通过，JSON／TOML 命令参数一致，DSH YAML 及两个代理旁路值解析通过；十节标题和本地链接路径存在。仅静态文档检查，未重新运行实际 Host、脚本测试或供应商调用；未修改 Host 配置。CLI／Shell 组合及跨版本升级仍未验收，完整产物集合仍待核实，已关闭的 Job 生命周期调查未重开。
+
+## 2026-11-14 协议检查脚本发行包安装验证
+
+- `uv build --offline` 基于当前未提交工作区构建 sdist 与 wheel；检查两者均包含 `protocol_probe.py`，sdist 包含 MANUAL。源码包 SHA-256 `fdf06e78e596cbc6c943ef9bc18ac9e38336c79eedf446f29bfdf323b6a811d7`，wheel SHA-256 `58b30e9a0158b819c1703d8d91a235bec8eee7bf732e441e03812b3685afa319`。这些是本地构建证据，不是已发布资产，尽管版本号相同。
+- 独立目录解压 sdist，使用 `uv sync --offline --frozen --no-dev` 安装，配置 local 及占位密钥，从无关工作目录以手册的 `uv --directory ... run --no-sync python -m zhenzhen_seedance_video.protocol_probe` 执行，退出码 0，输出 `protocol=2025-11-25 tools=23 resources=0 templates=0 prompts=0 local=ok`。使用现有 uv 缓存，未证明空缓存离线安装；wheel 未做独立安装运行验证，未使用真实供应商或 Host。
+- 包内容检查首次将构建工具生成的 `.gitignore` 误当作归档而报错；改为仅匹配 `.whl` 和 `.tar.gz` 后复查通过。隔离测试资源的清理状态见资源清单。
+
+## 2026-11-14 协议检查脚本交付审查
+
+- 对照手册主规范与指南检查 local 限制、隔离状态、失败脱敏、清理与发行边界；修正子进程 stderr 透传及清理失败前提前输出成功的问题，并要求派发状态明确为 false。手册说明异步超时后的收尾可能延长实际耗时。
+- `uv run --frozen pytest -q tests/test_protocol_probe.py --basetemp .cache/probe-review-20261114/tests`：3 passed，包含 local 成功、provider 拒绝和清理失败脱敏；全仓 Ruff check 与 format check 通过（170 个文件），`uv build --offline` 成功。将此次构建的 sdist 在独立目录用现有缓存离线冻结安装，从无关工作目录运行手册协议命令，退出 0，输出协议 2025-11-25、23 工具和 local=ok。
+- 脚本及测试仍未跟踪，须纳入下一版本的提交及发行候选后才能交付；当前发布标签仍不包含该脚本。未重新运行全量测试、真实供应商或实际 Host；wheel 独立安装运行和空缓存离线安装仍未验证。清理状态见资源清单。
+
+## 2026-11-14 wheel 安装与全量隔离复验
+
+- 基于当前未发布工作区离线构建 sdist 与 wheel；用 sdist 和锁文件在隔离虚拟环境执行 `uv sync --offline --frozen --no-dev` 准备依赖，卸载源码安装后单独以 `uv pip install --offline --no-deps` 安装 wheel。从无关工作目录确认模块加载路径在该虚拟环境 `site-packages`，设置 local 和占位密钥后运行 `python -m zhenzhen_seedance_video.protocol_probe`，退出 0：协议 2025-11-25、23 工具、资源及提示词均为空、local=ok。wheel SHA-256 `27b61d030615419bfcc51671f960d3d490297be923b37229c067ef747089767a`；更新手册后再次构建，wheel 摘要一致。
+- 首次尝试使用 `uv export --frozen` 的带哈希依赖文件在新环境直接离线安装失败：当前缓存没有该安装方式所需的 pydantic-core 和 rpds-py 归档；随后使用上述冻结同步成功。测试依赖现有缓存，不代表空缓存或仅凭 wheel 完成离线安装。
+- `uv run --frozen pytest -q --basetemp .cache/wheel-full-20261114/tests`：561 passed，耗时 557.20 秒；`uv run --frozen ruff check .` 和 `uv run --frozen ruff format --check .` 通过（170 个文件）；`uv build --offline` 成功。未调用真实供应商，未测试实际 Host 或发布版本；脚本和测试仍待纳入版本控制及下一版本。完整产物集合待核实，Job 生命周期调查保持关闭。隔离资源清理状态见资源清单。
