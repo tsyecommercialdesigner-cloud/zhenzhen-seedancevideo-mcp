@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "size": 729792,
+  "sha256": "912aaf2c74ee287e0ae32a451d5e4bca6dae7db0fce861f0093a6c0f3cd2086c",
+  "credential": false,
+  "headers": {
+    "accept-ranges": "bytes",
+    "content-length": "729792",
+    "content-type": "video/mp4"
+  }
+}

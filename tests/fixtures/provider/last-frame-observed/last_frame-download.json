@@ -1,0 +1,13 @@
+{
+  "kind": "last_frame",
+  "status": 200,
+  "size": 112496,
+  "sha256": "01857416757fda8169dde7e47f9b1c32ca6cb82b0f6fc646f8adfe6e6c8a50fa",
+  "credential": false,
+  "headers": {
+    "accept-ranges": "bytes",
+    "content-length": "112496",
+    "content-type": "image/jpeg"
+  },
+  "redirect_evidence": "unverified: pinned network URL comparison is not redirect evidence"
+}

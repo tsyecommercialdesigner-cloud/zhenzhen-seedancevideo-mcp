@@ -1,0 +1,30 @@
+{
+  "authorization_date": "2026-11-14",
+  "submission_limit": 10,
+  "submissions": 1,
+  "queries": 3,
+  "downloads": 2,
+  "records": [
+    {
+      "fixture": "submit-queued.json",
+      "method": "POST",
+      "http_status": 200,
+      "utc": "2026-11-14T00:03:02.658795+00:00",
+      "original_sha256": "89b1baaef1c7dc73fb631113beb6cecc78f97a319ddd134d4b513a5a1f4c9eae"
+    },
+    {
+      "fixture": "query-in-progress.json",
+      "method": "GET",
+      "http_status": 200,
+      "utc": "2026-11-14T00:03:38.053632+00:00",
+      "original_sha256": "3eec1073e5c88e11a8aa28d1c8852b3e73fe62fef1dca6d14765112d289699c2"
+    },
+    {
+      "fixture": "query-success-last-frame.json",
+      "method": "GET",
+      "http_status": 200,
+      "utc": "2026-11-14T00:04:49.949015+00:00",
+      "original_sha256": "1b479506e28efaee6a0e9b9507d69d0c25606fde6dc1288c6822c806c93ac3ba"
+    }
+  ]
+}

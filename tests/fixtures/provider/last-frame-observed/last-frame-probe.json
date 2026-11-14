@@ -1,0 +1,19 @@
+{
+    "programs": [
+
+    ],
+    "stream_groups": [
+
+    ],
+    "streams": [
+        {
+            "codec_name": "mjpeg",
+            "codec_type": "video",
+            "width": 640,
+            "height": 640
+        }
+    ],
+    "format": {
+        "format_name": "jpeg_pipe"
+    }
+}

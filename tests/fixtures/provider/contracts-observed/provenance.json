@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-14",
+  "prior_paid_submissions": 2,
+  "new_paid_submissions": 2,
+  "cumulative_paid_submissions": 4,
+  "limit": 10,
+  "queries": 6,
+  "negative_readonly_queries": 2,
+  "uploads": 1,
+  "downloads": 2,
+  "records": [
+    {
+      "fixture": "missing-task-response.json",
+      "http_status": 400,
+      "original_sha256": "32f2efc5acb5ea8c6698bc5d64cba2f413b69cd053f62857f73cb595f5b94408"
+    },
+    {
+      "fixture": "no-auth-response.json",
+      "http_status": 401,
+      "original_sha256": "e4236c868b1c029070e1c55ed295d381d3787a78b0a6ed87754643bd598d1832"
+    },
+    {
+      "fixture": "query-draft-1-response.json",
+      "http_status": 200,
+      "original_sha256": "96d380443436d11e2039b53b0aec594590851f5e0cc8aaeac384259cb40bb23d"
+    },
+    {
+      "fixture": "query-draft-2-response.json",
+      "http_status": 200,
+      "original_sha256": "c3c6ebd52997df15d64152365349b85eb5f14dbfb98cb16144c6d8d0813906e5"
+    },
+    {
+      "fixture": "query-draft-3-response.json",
+      "http_status": 200,
+      "original_sha256": "710ddf5ff57ace341b71f2f5ae8622fc4e16eaaa0ef5039caa0c9ef5357883c3"
+    },
+    {
+      "fixture": "query-upscale-1-response.json",
+      "http_status": 200,
+      "original_sha256": "e8cf915cb69ccc23f9173552fcd3ec97652a6548fc9e87667cc78c51b0f32ffa"
+    },
+    {
+      "fixture": "query-upscale-2-response.json",
+      "http_status": 200,
+      "original_sha256": "3a8ff66afbbb117e6a646cad2585f36e6c42516770119bb012894f5fd36667e5"
+    },
+    {
+      "fixture": "query-upscale-3-response.json",
+      "http_status": 200,
+      "original_sha256": "76b99f77ac37b552c103d88018d5959b64f5b972d1a3248b43ad93162e72252a"
+    },
+    {
+      "fixture": "submit-draft-response.json",
+      "http_status": 200,
+      "original_sha256": "78f513f73d3aec98a4484dafa75f5cbda9b1a1d1e7e6e6592255be735f34eeb1"
+    },
+    {
+      "fixture": "submit-upscale-response.json",
+      "http_status": 200,
+      "original_sha256": "278293a071d36509f96f079f6a704a0ec54c78e93e53e241e846b5bfdf582e0f"
+    },
+    {
+      "fixture": "upload-response.json",
+      "http_status": 200,
+      "original_sha256": "ff0e9011fac1cfa7b6537fb1b36933e1daa71b9f80b9fd2db27b67b9b86bc21f"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+name: PR checks
+
+on:
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install locked environment
+        run: uv sync --frozen
+      - name: Check lint and formatting
+        run: |
+          uv run --frozen ruff check .
+          uv run --frozen ruff format --check .
+      - name: Run isolated tests
+        shell: pwsh
+        run: uv run --frozen pytest -q --basetemp "$env:RUNNER_TEMP\sd-tests"
+      - name: Build packages
+        run: uv build --offline
+      - name: Record candidate identity and checksums
+        shell: pwsh
+        run: |
+          git rev-parse HEAD | Set-Content dist/SOURCE_COMMIT.txt -Encoding ascii
+          git rev-parse 'HEAD^{tree}' | Set-Content dist/SOURCE_TREE.txt -Encoding ascii
+          Get-FileHash dist/*.whl,dist/*.tar.gz -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $([IO.Path]::GetFileName($_.Path))" } | Set-Content dist/SHA256SUMS.txt -Encoding ascii
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-candidate-${{ github.run_id }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30

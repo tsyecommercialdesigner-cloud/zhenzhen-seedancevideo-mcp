@@ -1,0 +1,10 @@
+{
+  "id": "task_xxxxxxxxxxxx",
+  "object": "video",
+  "model": "seedance-2.0-mini-t2v",
+  "status": "completed",
+  "progress": 100,
+  "created_at": 1783377182,
+  "completed_at": 1783377298,
+  "metadata": { "url": "https://.../output.mp4?X-Tos-Signature=..." }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "task_xxxxxxxxxxxx",
+  "object": "video",
+  "model": "seedance-2.0-mini-t2v",
+  "status": "failed",
+  "progress": 100,
+  "error": {
+    "code": "video_generation_failed",
+    "message": "..."
+  }
+}
