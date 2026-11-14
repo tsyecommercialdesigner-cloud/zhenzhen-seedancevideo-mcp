@@ -1,7 +1,7 @@
 # Agent 工具使用手册
 
-适用版本：0.1.0.dev0，MCP SDK 2.3.0，Windows。
-当前生产入口已接通供应商适配器，默认execution_mode=local禁止网络，显式provider配置并重启才启用。已有专用启动器的真实供应商闭环，详见交付证据；实际Agent Host尚未验收，不能以SDK stdio验证代替。
+适用版本：0.1.0.dev1，MCP SDK 2.3.0，Windows。
+当前发行入口已接通供应商适配器，默认 execution_mode=local 不执行供应商请求，显式配置 provider 并重启才启用。实际 Host 工具发现及 Codex／DSH 跨 Host 主视频交付已有分范围证据，详见[验证记录](verification-add-local-video-generation-service.md)；不能把这些证据推广为全部模型、Host 或完整产物集合均已验收。
 
 ## 启动与配置
 
@@ -14,7 +14,14 @@
   "mcpServers": {
     "zhenzhen-seedance-video": {
       "command": "uv",
-      "args": ["--directory", "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp", "run", "--no-sync", "zhenzhen-seedance-video", "stdio"]
+      "args": [
+        "--directory",
+        "D:\\MCP\\zhenzhen-seedancevideo-mcp",
+        "run",
+        "--no-sync",
+        "zhenzhen-seedance-video",
+        "stdio"
+      ]
     }
   }
 }
@@ -43,7 +50,7 @@
 - `repair_task_materials(task_id, material_id, source, expected_version)`：补回相同内容；source 为本地绝对路径。
 - `retry_material_cleanup(task_id, expected_version)`：只重试已登记清理待办，不允许任意路径删除。
 - `retry_task_download(task_id, expected_version, overwrite=false)`：恢复下载，异常目标显式覆盖；不重新生成。
-- `get_diagnostic(diagnostic_id)`：有界脱敏诊断，不输出原始日志。费用尚未返回是 null，不是 0；SUCCESS 与完整费用响应继续待核实。
+- `get_diagnostic(diagnostic_id)`：有界脱敏诊断，不输出原始日志。费用尚未返回是 null，不是 0；SUCCESS 与实际费用响应已有局部真实样例，不能推广到所有模型。
 - `upscale_video(request_key, request)`：独立入口固定 zhenzhen-upscaler，metadata.content 中恰好一个 video_url，目标分辨率默认 1080p；不接受生成提示词优化。不自动由生成任务触发收费超分。
 
 ## 可执行隔离演练
@@ -52,10 +59,12 @@
 uv run --frozen pytest tests/test_tools.py -q
 ```
 
-该演练启动真实 stdio 前端与两个协议客户端，使用合成适配器、隔离任务库和本地假下载服务完成能力、预检、优化授权、提交／找回、等待、恢复和复制；不会调用真实供应商。取消与多调用竞争亦在该文件覆盖。通用 Host JSON 只作接入示例，实际 Host 验收仍属 13.3。
+该演练启动真实 stdio 前端与两个协议客户端，使用合成适配器、隔离任务库和本地假下载服务完成能力、预检、优化授权、提交／找回、等待、恢复和复制；不会调用真实供应商。取消与多调用竞争亦在该文件覆盖。通用 Host JSON 只作接入示例；实际 Host 证据及其限制见验证记录。
 
 
 ## 2026-11-13 主视频引用与部分交付
+
+以下为该时点的历史记录；SUCCESS／费用及实际 Host 的后续证据见最新验证记录，完整产物集合仍待核实。
 
 已确认的 metadata.url 可通过内部 CompatibilityAdapter（注入任务库）接通主视频下载、持久化与复制。任务查询新增 artifact_set_status；完整集合未知时为 unverified，已就绪主视频可单独交付，任务保持 partial，保留 ARTIFACT_SET_UNVERIFIED 和输入托管副本。显式放弃仍按既有规则清理素材。测试 tests/test_main_video_delivery.py 使用合成传输覆盖下载、复制、403恢复、数据库重开、重复查询、格式和引用关联以及清理协调。四份样例仍是契约来源；尾帧／完整集合、SUCCESS、费用完整响应待核实，无真实调用证据。
 
