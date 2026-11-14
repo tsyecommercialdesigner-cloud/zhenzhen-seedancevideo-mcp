@@ -827,5 +827,75 @@
     "status": "removed; 558 tests passed; 76 process identity records confirmed exited; dedicated root absent",
     "release_condition": "completed 2026-11-14; sanitized verification and build hashes retained",
     "cleanup": "verified exact root and 325 in-scope symbolic links; unlinked then removed test/build root; preserved existing paid state and videos"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\wheel-full-20261114",
+    "purpose": "isolated wheel installation and full delivery regression",
+    "version": "unreleased workspace 0.1.0.dev0",
+    "task": "wheel probe and full verification",
+    "owner": "Agent",
+    "status": "removed; 561 tests and isolated wheel probe passed; related processes and root absent",
+    "release_condition": "completed 2026-11-14; verification recorded",
+    "cleanup": "verified exact root and no related processes; verified and unlinked 328 in-root symbolic links; removed test environments, builds and temporary state"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\probe-review-20261114",
+    "purpose": "protocol probe delivery review isolated tests and offline build",
+    "version": "unreleased workspace 0.1.0.dev0",
+    "task": "protocol probe delivery review",
+    "owner": "Agent",
+    "status": "removed; test and installation checks recorded, related process paths absent and root absent",
+    "release_condition": "completed 2026-11-14",
+    "cleanup": "verified and unlinked three in-root symbolic links, then removed test root, distribution and isolated installation"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\probe-distribution-20261114",
+    "purpose": "offline distribution build and isolated source-package protocol check installation",
+    "version": "unreleased workspace 0.1.0.dev0",
+    "task": "protocol probe distribution validation",
+    "owner": "Agent",
+    "status": "removed; isolated source installation check passed, task process paths absent and root absent",
+    "release_condition": "completed 2026-11-14; validation and build hashes recorded",
+    "cleanup": "verified exact root and absence of reparse points and related processes; removed packages, installation, synthetic configuration and temporary state"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\dsh-desktop-proxy-20261114",
+    "purpose": "isolated actual DSH Desktop local-mode NO_PROXY and tool-discovery validation",
+    "version": "workspace 0.1.0.dev0; DSH Desktop current installation",
+    "task": "DSH Desktop NO_PROXY validation",
+    "owner": "Agent and user",
+    "status": "removed; actual Desktop local test passed, temporary entry absent, recorded frontend and backend PIDs absent, isolated root absent",
+    "release_condition": "completed 2026-11-14; sanitized validation evidence recorded",
+    "cleanup": "removed only marked Host entry while preserving other current configuration; verified process exit, exact root and no reparse points; removed isolated installation, state and private backup"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\dsh-proxy-local-20261114",
+    "purpose": "isolated DSH MCP plugin environment propagation and local stdio discovery",
+    "version": "DSH MCP client 0.2.1-rc.5; workspace 0.1.0.dev0",
+    "task": "DSH NO_PROXY local verification",
+    "owner": "Agent",
+    "status": "removed; test-root process paths and recorded backend PID absent; no Host configuration changed",
+    "release_condition": "completed 2026-11-14; isolated plugin checks recorded",
+    "cleanup": "verified exact root and no reparse points, then removed isolated project, dependencies, state and probe"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\manual-audit-20261114",
+    "purpose": "isolated protocol probe regression and manual example checks",
+    "version": "unreleased workspace after v0.1.0.dev0",
+    "task": "manual comprehensive audit",
+    "owner": "Agent",
+    "status": "removed; recorded backend PID absent and dedicated root absent on rescan",
+    "release_condition": "completed 2026-11-14; validation results documented",
+    "cleanup": "verified and unlinked six in-root symbolic links, then removed exact dedicated root; no Host configuration changed"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\manual-probe-build and three .cache/test-runs roots",
+    "purpose": "local protocol probe tests and offline distribution build",
+    "version": "unreleased workspace after v0.1.0.dev0",
+    "task": "manual protocol probe and DSH configuration",
+    "owner": "Agent",
+    "status": "removed; recorded backend identities exited; test and build roots absent",
+    "release_condition": "completed 2026-11-14",
+    "cleanup": "scoped links verified and unlinked; exact roots removed; no Host configuration touched"
   }
 ]
