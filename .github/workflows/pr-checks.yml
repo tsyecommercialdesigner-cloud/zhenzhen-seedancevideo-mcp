@@ -22,7 +22,8 @@ jobs:
           uv run --frozen ruff check .
           uv run --frozen ruff format --check .
       - name: Run isolated tests
-        run: uv run --frozen pytest -q
+        shell: pwsh
+        run: uv run --frozen pytest -q --basetemp "$env:RUNNER_TEMP\sd-tests"
       - name: Build packages
         run: uv build --offline
       - name: Record candidate identity and checksums
