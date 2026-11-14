@@ -2,7 +2,7 @@
 
 Windows 本地 stdio MCP Server，同一 Windows 用户的多个 Agent Host 共享任务后端、持久化队列与产物。
 
-当前版本 **0.1.0.dev0**，开发中、未发布。本地生命周期、任务管理和文件交付已有隔离验证，供应商SUCCESS/实扣及代表性真实闭环已有独立证据。默认发行入口已接线但EXECUTION_MODE默认local阻断网络；显式provider并重启后新提交才可付费执行，旧/local任务不自动补授权。干净Windows安装及实际Host跨Host主视频交付已按任务完成判断验收；完整产物集合仍待核实。Job生命周期调查已关闭，启动器被结束可能连带终止后端，兼容性限制尚未修复；不承诺任意Host退出时持续保活。详见[验证记录](docs/verification-add-local-video-generation-service.md)。当前没有可引用的本实现发布标签或 CI 通过 SHA，不从元数据版本推测发布地址。
+当前版本 **0.1.0.dev0**，已发布为[开发预发行版](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev0)，发布提交 `d0cbe6de5471d631016706438f1a6df0b08ef04c`。本地生命周期、任务管理和文件交付已有隔离验证，供应商SUCCESS/实扣及代表性真实闭环已有独立证据。默认发行入口已接线但EXECUTION_MODE默认local阻断网络；显式provider并重启后新提交才可付费执行，旧/local任务不自动补授权。干净Windows安装及实际Host跨Host主视频交付已按任务完成判断验收；完整产物集合仍待核实。Job生命周期调查已关闭，启动器被结束可能连带终止后端，兼容性限制尚未修复；不承诺任意Host退出时持续保活。详见[验证记录](docs/verification-add-local-video-generation-service.md)。发布候选通过 Windows 隔离测试和构建；具体范围及未验证项见验证记录。
 
 - 安装、配置、升级和回滚：[MANUAL.md](MANUAL.md)
 - 工具及恢复：[Agent 工具手册](docs/agent-tools.md)
