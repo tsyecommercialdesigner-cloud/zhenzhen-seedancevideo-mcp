@@ -829,6 +829,26 @@
     "cleanup": "verified exact root and 325 in-scope symbolic links; unlinked then removed test/build root; preserved existing paid state and videos"
   },
   {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\ci-manual-review-20261114",
+    "purpose": "manual-only gate pre-merge isolated verification",
+    "version": "unreleased manual backfill CI fix",
+    "task": "manual-only CI pre-merge review",
+    "owner": "Agent",
+    "status": "removed; 15 isolated tests passed; root absent",
+    "release_condition": "2026-11-14 local checks recorded; remote PR verification pending",
+    "cleanup": "verified process exit and exact root; unlinked 15 in-root symbolic links and removed task-owned test data"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\ci-manual-relation-20261114",
+    "purpose": "isolated Git histories for manual-only workflow and release ancestry checks",
+    "version": "unreleased CI correction",
+    "task": "manual-only release ancestry fix",
+    "owner": "Agent",
+    "status": "removed; 15 isolated tests passed and test root absent",
+    "release_condition": "2026-11-14 local validation recorded; remote CI not triggered",
+    "cleanup": "verified exact root and process exit, unlinked 15 in-root symbolic links and removed task-owned test data"
+  },
+  {
     "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\ci-gate-20261114",
     "purpose": "isolated CI gate classification and provenance tests",
     "version": "unreleased CI gate implementation",

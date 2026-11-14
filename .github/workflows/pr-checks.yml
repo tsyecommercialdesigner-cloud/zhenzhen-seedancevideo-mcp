@@ -18,15 +18,64 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
-      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
-      - name: Install locked environment
-        run: uv sync --frozen
       - name: Declare manual review boundary
         shell: pwsh
         run: |
           'MANUAL.md content review is assigned to the Agent and a human; CI does not attest it.' >> $env:GITHUB_STEP_SUMMARY
+      - name: Identify manual-only published backfill
+        id: manual
+        shell: pwsh
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          $manualOnly = $false
+          if ($env:BASE_SHA -match '^[0-9a-f]{40}$' -and $env:HEAD_SHA -match '^[0-9a-f]{40}$') {
+            $diff = @(git diff --name-status --no-renames "$env:BASE_SHA...$env:HEAD_SHA")
+            $direct = @(git diff --name-status --no-renames $env:BASE_SHA HEAD)
+            if ($diff.Count -eq 1 -and $diff[0] -ceq "M`tMANUAL.md" -and $direct.Count -eq 1 -and $direct[0] -ceq "M`tMANUAL.md") {
+              $baseFile = git ls-tree $env:BASE_SHA -- MANUAL.md
+              $headFile = git ls-tree $env:HEAD_SHA -- MANUAL.md
+              $mergeFile = git ls-tree HEAD -- MANUAL.md
+              if ($baseFile -match '^100644 blob [0-9a-f]{40}\tMANUAL\.md$' -and $headFile -match '^100644 blob [0-9a-f]{40}\tMANUAL\.md$' -and $mergeFile -match '^100644 blob [0-9a-f]{40}\tMANUAL\.md$') {
+                $projectFile = git show HEAD:pyproject.toml
+                $versionMatches = [regex]::Matches(($projectFile -join "`n"), '(?m)^version\s*=\s*"([0-9A-Za-z.]+)"\s*$')
+                if ($versionMatches.Count -eq 1) {
+                  $version = $versionMatches[0].Groups[1].Value
+                  $tagCommit = git rev-parse --verify "refs/tags/v${version}^{commit}" 2>$null
+                  if ($LASTEXITCODE -eq 0 -and $tagCommit -match '^[0-9a-f]{40}$') {
+                    git merge-base --is-ancestor $tagCommit refs/remotes/origin/main
+                    if ($LASTEXITCODE -eq 0) {
+                      git merge-base --is-ancestor $tagCommit HEAD
+                      $sourceReachable = $LASTEXITCODE -eq 0
+                      if (-not $sourceReachable) {
+                        $parents = (git rev-list --parents -n 1 $tagCommit) -split ' '
+                        if ($LASTEXITCODE -eq 0 -and $parents.Count -eq 3) {
+                          git merge-base --is-ancestor $parents[2] HEAD
+                          $sourceReachable = $LASTEXITCODE -eq 0
+                        }
+                      }
+                      $manualOnly = $sourceReachable
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if ($manualOnly) {
+            'manual_only=true' >> $env:GITHUB_OUTPUT
+            "### CI scope`nManual-only published backfill: no tests, build, Release API validation or artifact reuse. Agent and human must review MANUAL.md; this is not full release acceptance." >> $env:GITHUB_STEP_SUMMARY
+          } else {
+            'manual_only=false' >> $env:GITHUB_OUTPUT
+          }
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        if: steps.manual.outputs.manual_only != 'true'
+      - name: Install locked environment
+        if: steps.manual.outputs.manual_only != 'true'
+        run: uv sync --frozen
       - name: Classify and verify trusted evidence
         id: gate
+        if: steps.manual.outputs.manual_only != 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -65,7 +114,7 @@ jobs:
           uv run --frozen python scripts/ci_backfill.py
           if ($LASTEXITCODE -ne 0) { throw 'CI gate failed' }
       - name: Check lint and formatting
-        if: steps.gate.outputs.reuse != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.gate.outputs.reuse != 'true'
         shell: pwsh
         run: |
           uv run --frozen ruff check .
@@ -73,14 +122,14 @@ jobs:
           uv run --frozen ruff format --check .
           if ($LASTEXITCODE -ne 0) { throw 'Ruff format check failed' }
       - name: Run isolated tests
-        if: steps.gate.outputs.reuse != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.gate.outputs.reuse != 'true'
         shell: pwsh
         run: uv run --frozen pytest -q --basetemp "$env:RUNNER_TEMP\sd-tests"
       - name: Build packages
-        if: steps.gate.outputs.reuse != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.gate.outputs.reuse != 'true'
         run: uv build --offline
       - name: Record candidate identity and checksums
-        if: steps.gate.outputs.reuse != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.gate.outputs.reuse != 'true'
         shell: pwsh
         run: |
           git rev-parse HEAD | Set-Content dist/SOURCE_COMMIT.txt -Encoding ascii
@@ -90,7 +139,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Verification evidence generation failed' }
           '### CI scope: full Windows lint, format, tests and build' >> $env:GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: steps.gate.outputs.reuse != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.gate.outputs.reuse != 'true'
         with:
           name: windows-candidate-${{ github.run_id }}
           path: dist/*

@@ -281,3 +281,9 @@ Windows 对带 KILL_ON_JOB_CLOSE 标志的 Job 最后句柄关闭行为，以及
 - 用户明确 `MANUAL.md` 由 Agent 和人工审查，CI 不审查其内容；其余文件仍受分类、Release 与证据核验约束。手册变化后不能复用包含旧手册的源码包；稳定 `windows` 状态及摘要报告实际范围。CI Action 固定到提交以约束检查输入。
 - 相关隔离测试 `tests/test_ci_backfill.py tests/test_ci_evidence.py`：12 passed；Ruff check／format 通过（175 文件）、工作流 YAML 与 PowerShell 解析通过、离线构建通过，工程及 Git 主规范严格校验通过。本地全量隔离测试 573 passed in 550.44s；测试启动后继续收紧了 CI 脚本和相应测试，故全量结果不作为最终 CI 脚本快照的通过依据，最新定向测试已复跑，最终提交由实际远端 CI 完整复验。
 - 首轮 Release 摘要模拟因 Windows 换行导致测试夹具摘要不一致而失败，改为固定字节后通过。可信历史运行正负例为合成 GitHub API 数据，尚未证明真实远端轻量复用成功；无证据的首次部署保守运行完整检查。未调用真实供应商，资源清理见清单。
+
+## 2026-11-14 手册回填及 Release 来源关系修正（本地）
+
+- Release 标签指向已进入 main 的合并提交时，允许其发布来源（第二父提交）是目标分支祖先，不再错误要求合并提交自身是 dev 的祖先；不相关分支仍拒绝。仅修改已有普通 `MANUAL.md` 且本地发布标签和来源关系可确认时，工作流预检不安装依赖、不运行完整测试或构建，并明确声明由 Agent 和人工审查、未调用 Release API、未复用测试或产物；其他或关系不明场景保守回退。
+- 在隔离 Git 仓库运行实际工作流 PowerShell 预检，覆盖 main 合并提交不在 dev 祖先但发布来源在 dev、混入代码、标签缺失和不相关分支；与原 CI 测试合计 15 passed。工作流 YAML、PowerShell 语法和手册轻量路径的步骤条件静态检查通过；全仓 Ruff check／format、`git diff --check` 及工程主规范严格校验通过。未触发远端 CI、未验证实际 GitHub PR，也未合并 main；资源清理见清单。
+- 合并前再次运行隔离测试：15 passed in 10.31s；YAML／PowerShell 与手册单文件路径上安装、门禁、测试及构建的跳过条件核对通过，Ruff check／format 通过（176 文件）。当前仓库只读 Git 检查确认 v0.1.0.dev1 发布来源在 dev 历史中、标签在 main 历史中；实际 GitHub 手册单文件 PR 尚未运行，不能将隔离测试说成远端验收。

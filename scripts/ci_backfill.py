@@ -161,6 +161,27 @@ def gh_json(endpoint):
     return json.loads(raw)
 
 
+def release_source_reachable(release_commit, target="HEAD", main="refs/remotes/origin/main"):
+    """Accept a published main merge when its release-source parent is in the target."""
+
+    def ancestor(left, right):
+        result = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", left, right],
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode not in (0, 1):
+            raise ValueError("Cannot determine release ancestry")
+        return result.returncode == 0
+
+    if not ancestor(release_commit, main):
+        return False
+    if ancestor(release_commit, target):
+        return True
+    parents = git("rev-list", "--parents", "-n", "1", release_commit).split()
+    return len(parents) == 3 and ancestor(parents[2], target)
+
+
 def verify_release(repository, root, base, head):
     """Use GitHub's release and ref APIs; never trust facts claimed by a PR alone."""
     root = Path(root)
@@ -178,11 +199,7 @@ def verify_release(repository, root, base, head):
         ref = gh_json(f"repos/{repository}/git/tags/{ref['sha']}")["object"]
     if ref["type"] != "commit" or not re.fullmatch(r"[0-9a-f]{40}", ref["sha"]):
         return False
-    if subprocess.run(
-        ["git", "merge-base", "--is-ancestor", ref["sha"], "HEAD"],
-        capture_output=True,
-        check=False,
-    ).returncode:
+    if not release_source_reachable(ref["sha"]):
         return False
     expected = {
         f"zhenzhen_seedancevideo_mcp-{version}.tar.gz",
