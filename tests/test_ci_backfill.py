@@ -211,7 +211,8 @@ def test_gate_reports_reuse_only_with_verified_run(tmp_path, monkeypatch):
     assert "No candidate package is reused" in summary.read_text()
 
 
-def test_trusted_run_verifies_github_provenance(monkeypatch):
+@pytest.mark.parametrize("later_mode", ["reused", "malformed", "non_mapping", "bad_source"])
+def test_trusted_run_verifies_github_provenance(monkeypatch, later_mode):
     repo = "example/repo"
     head, source, tree, merge = "a" * 40, "b" * 40, "c" * 40, "d" * 40
     expected = {
@@ -255,22 +256,39 @@ def test_trusted_run_verifies_github_provenance(monkeypatch):
         "base": {"ref": "dev"},
     }
 
+    later = {**run, "id": 124}
+
     def api(endpoint):
         if "/workflows/" in endpoint:
-            return {"workflow_runs": [run]}
+            return {"workflow_runs": [later, run]}
         if endpoint.endswith("/pulls"):
             return [{"number": 1, "merged_at": "2026-01-01", "merge_commit_sha": merge}]
         if endpoint.endswith("/artifacts"):
-            return {"artifacts": [{"name": "windows-candidate-123", "expired": False}]}
+            run_id = endpoint.split("/")[-2]
+            return {"artifacts": [{"name": f"windows-candidate-{run_id}", "expired": False}]}
         if "/git/commits/" in endpoint:
             return {"tree": {"sha": tree}, "parents": [{"sha": head}]}
         return full_pull
 
     def run_command(args, **kwargs):
         if args[0] == "gh":
-            Path(args[args.index("--dir") + 1], "VERIFICATION_EVIDENCE.json").write_text(
-                json.dumps(evidence), encoding="utf-8"
-            )
+            path = Path(args[args.index("--dir") + 1])
+            if args[3] == "124":
+                if later_mode == "reused":
+                    (path / "CANDIDATE_EVIDENCE.json").write_text("{}", encoding="utf-8")
+                else:
+                    contents = {
+                        "malformed": "{",
+                        "non_mapping": "[]",
+                        "bad_source": '{"source_commit": 123}',
+                    }
+                    (path / "VERIFICATION_EVIDENCE.json").write_text(
+                        contents[later_mode], encoding="utf-8"
+                    )
+            else:
+                (path / "VERIFICATION_EVIDENCE.json").write_text(
+                    json.dumps(evidence), encoding="utf-8"
+                )
         return subprocess.CompletedProcess(args, 0)
 
     monkeypatch.setattr(gate, "gh_json", api)

@@ -304,3 +304,11 @@ Windows 对带 KILL_ON_JOB_CLOSE 标志的 Job 最后句柄关闭行为，以及
 全量隔离测试 `uv run --frozen pytest -q --basetemp .cache/ci-full-20261116`：601 passed，耗时 554.51 秒；运行期间 CI 测试与工作流继续调整，因此该结果对应开始时收集的测试，最终 CI 相关修改另以 45 项定向测试验证。清理时确认 359 个测试链接指向该专用目录内，逐个解除后移除目录，复扫路径不存在。全仓 Ruff 与格式检查通过；实际 GitHub PR 对最终提交的检查仍待运行。
 
 PR #14 的 Windows 完整检查成功；PR #15 验证并复用该运行，另行构建候选包。合并后对 PR #15 做只读发布候选核验，发现按 dev 头提交查询 PR 返回 feature PR，已改为按 main 合并提交查询；修正后以真实 API 响应、已保留的候选与历史证据核验复用范围及两个资产摘要成功。未创建标签、Release 或调用供应商，临时 worktree 和候选下载已清理；修正提交的 PR 检查尚待运行。
+
+## 2026-11-16 可信复用复核修复（本地）
+
+- 完整证据检索跳过没有完整证据、格式错误或来源字段无效的较新候选，继续检查更早运行；网络及 Git 故障仍保守回退。使用 GitHub 只读数据复测，在最新复用型候选之后找到已成功的完整运行 `43803659124`。
+- 事实回填候选允许与历史验证文件树不同，但候选树仍须对应最终 main，历史树须与上游 Git 对象一致；重新计算两侧操作输入指纹，且差异仅允许经现有事实回填门禁覆盖的 README 或资源清单。构建资产仍单独核验当前候选和摘要，不复用旧包。
+- 隔离回归覆盖缺失／损坏证据继续检索、README／清单变化、未允许文件变化、输入指纹被篡改及资产验证：`uv run --frozen pytest tests/test_ci_backfill.py tests/test_release_control.py tests/test_ci_reuse.py tests/test_ci_evidence.py tests/test_ci_docs.py tests/test_ci_tier.py tests/test_ci_manual_only.py -q --basetemp .cache/ci-reuse-final-20261116`，54 passed。初次单独运行发布测试时暴露导入路径问题，修复后独立运行 17 passed。全仓 Ruff 与格式检查通过，测试与证据临时目录已核对并清理。
+- 未触发远端 CI，未修改分支保护，未调用供应商或执行发布；GitHub 上实际修复行为待后续提交和 PR 检查。
+- 提交前复核：相同七组隔离测试在 `.cache/ci-reuse-review-20261116` 再次运行，54 passed；全仓 Ruff check、format 和 `git diff --check` 通过。复核目录及其测试符号链接已清理；该结果不代替后续 PR 的实际门禁。
