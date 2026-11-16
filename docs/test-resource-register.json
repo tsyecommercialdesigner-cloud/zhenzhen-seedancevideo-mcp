@@ -947,5 +947,15 @@
     "status": "removed; recorded backend identities exited; test and build roots absent",
     "release_condition": "completed 2026-11-14",
     "cleanup": "scoped links verified and unlinked; exact roots removed; no Host configuration touched"
+  },
+  {
+    "path": ".cache/ci-lightweight-20261116; .cache/ci-release-20261116; .cache/ci-package-check-20261116; .cache/ci-package-probe-20261116; .cache/ci-full-20261116",
+    "purpose": "isolated CI gate tests and distribution installation check",
+    "version": "unreleased lightweight CI workspace",
+    "task": "lightweight CI and controlled release implementation",
+    "owner": "Agent",
+    "status": "removed; dedicated paths absent after rescan",
+    "release_condition": "test results recorded in verification log",
+    "cleanup": "verified test symlinks and targets within each root, unlinked them and removed exact roots; temporary installation environments removed by context managers"
   }
 ]

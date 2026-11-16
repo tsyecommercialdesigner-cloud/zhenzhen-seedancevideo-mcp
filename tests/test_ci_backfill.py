@@ -177,9 +177,9 @@ def test_gate_falls_back_when_evidence_unavailable(tmp_path, monkeypatch):
     assert gate.main() == 1
 
 
-def test_manual_is_excluded_but_unknown_file_is_not(monkeypatch):
+def test_manual_and_unknown_files_do_not_grant_mixed_backfill_reuse(monkeypatch):
     monkeypatch.setattr(gate, "git", lambda *args: "MANUAL.md\n")
-    assert gate.classify("base", "head")
+    assert not gate.classify("base", "head")
     monkeypatch.setattr(gate, "git", lambda *args: "MANUAL.md\npyproject.toml\n")
     assert not gate.classify("base", "head")
 
@@ -205,7 +205,7 @@ def test_gate_reports_reuse_only_with_verified_run(tmp_path, monkeypatch):
         gate.subprocess, "run", lambda *args, **kwargs: subprocess.CompletedProcess(args, 0)
     )
     assert gate.main() == 0
-    assert output.read_text().strip() == "reuse=true"
+    assert output.read_text().splitlines() == ["reuse=true", "reuse_run=123"]
     assert "trusted run 123" in summary.read_text()
     assert "MANUAL.md content is excluded" in summary.read_text()
     assert "No candidate package is reused" in summary.read_text()
@@ -277,6 +277,8 @@ def test_trusted_run_verifies_github_provenance(monkeypatch):
     monkeypatch.setattr(gate.subprocess, "run", run_command)
     monkeypatch.setattr(gate, "input_fingerprint", lambda revision: "e" * 64)
     assert gate.trusted_run(repo, "base", expected) == 123
+    assert gate.trusted_run(repo, "base", expected, exact_tree=tree) == 123
+    assert gate.trusted_run(repo, "base", expected, exact_tree="f" * 40) is None
     evidence["image_version"] = "different"
     assert gate.trusted_run(repo, "base", expected) is None
 
@@ -299,7 +301,7 @@ def test_classifier_against_isolated_git_history(tmp_path, monkeypatch):
     (tmp_path / "MANUAL.md").write_text("human reviewed manual", encoding="utf-8")
     git("add", ".")
     git("commit", "-m", "manual")
-    assert gate.classify(base, git("rev-parse", "HEAD"))
+    assert not gate.classify(base, git("rev-parse", "HEAD"))
     (tmp_path / "runtime.py").write_text("changed", encoding="utf-8")
     git("add", ".")
     git("commit", "-m", "code")

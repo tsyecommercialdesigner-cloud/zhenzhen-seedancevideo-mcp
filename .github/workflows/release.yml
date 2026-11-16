@@ -1,0 +1,103 @@
+name: Controlled release
+
+on:
+  workflow_dispatch:
+    inputs:
+      main_sha:
+        description: Full SHA of the reviewed main merge
+        required: true
+        type: string
+      candidate_run:
+        description: Successful dev-to-main candidate CI run ID
+        required: true
+        type: string
+      notes:
+        description: Reviewed release notes
+        required: true
+        type: string
+      prerelease:
+        description: Publish as a prerelease
+        required: true
+        default: false
+        type: boolean
+      acceptance_reviewed:
+        description: Confirm required manual acceptance and outstanding limitations were reviewed
+        required: true
+        default: false
+        type: boolean
+
+permissions: {}
+
+jobs:
+  prepare:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - name: Require main dispatch
+        shell: pwsh
+        env:
+          ACCEPTANCE_REVIEWED: ${{ inputs.acceptance_reviewed }}
+        run: |
+          if ($env:GITHUB_REF -ne 'refs/heads/main') { throw 'Release must be dispatched on main' }
+          if ($env:ACCEPTANCE_REVIEWED -ne 'true') { throw 'Manual acceptance review is required' }
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.main_sha }}
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+      - run: uv sync --frozen
+      - name: Verify candidate and prepare assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAIN_SHA: ${{ inputs.main_sha }}
+          CANDIDATE_RUN: ${{ inputs.candidate_run }}
+        run: |
+          uv run --frozen python scripts/release_control.py prepare --repository $env:GITHUB_REPOSITORY --main-sha $env:MAIN_SHA --run-id $env:CANDIDATE_RUN --folder "$env:RUNNER_TEMP/release-ready"
+          if ($LASTEXITCODE -ne 0) { throw 'Release preparation failed' }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: prepared-release-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/release-ready/*.whl
+            ${{ runner.temp }}/release-ready/*.tar.gz
+            ${{ runner.temp }}/release-ready/SHA256SUMS.txt
+            ${{ runner.temp }}/release-ready/RELEASE_PREPARED.json
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: prepare
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.main_sha }}
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: prepared-release-${{ github.run_id }}
+          path: ${{ runner.temp }}/release-ready
+      - name: Publish verified assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAIN_SHA: ${{ inputs.main_sha }}
+          RELEASE_NOTES: ${{ inputs.notes }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          if ($env:GITHUB_REF -ne 'refs/heads/main') { throw 'Release must be dispatched on main' }
+          $notes = Join-Path $env:RUNNER_TEMP 'release-notes.txt'
+          [IO.File]::WriteAllText($notes, $env:RELEASE_NOTES, [Text.UTF8Encoding]::new($false))
+          $params = @('run', '--no-project', '--python', '3.12.14', 'python', 'scripts/release_control.py', 'publish', '--repository', $env:GITHUB_REPOSITORY, '--main-sha', $env:MAIN_SHA, '--folder', "$env:RUNNER_TEMP/release-ready", '--notes', $notes)
+          if ($env:PRERELEASE -eq 'true') { $params += '--prerelease' }
+          & uv @params
+          if ($LASTEXITCODE -ne 0) { throw 'Publishing failed; inspect any draft and tag before retrying' }

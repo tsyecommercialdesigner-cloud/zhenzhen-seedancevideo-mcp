@@ -21,7 +21,9 @@ def release_repo(tmp_path, monkeypatch):
     git("config", "user.email", "test@example.invalid")
     git("config", "user.name", "Synthetic Test")
     (tmp_path / "pyproject.toml").write_text('[project]\nversion = "0.1.0.dev1"\n')
-    (tmp_path / "MANUAL.md").write_text("original\n")
+    (tmp_path / "MANUAL.md").write_text(
+        "本手册对应 **0.1.0.dev1**，发布待确认。\n\n## 验收记录\n待确认。\n", encoding="utf-8"
+    )
     (tmp_path / "runtime.py").write_text("runtime\n")
     git("add", ".")
     git("commit", "-m", "base")
@@ -37,13 +39,16 @@ def release_repo(tmp_path, monkeypatch):
     git("update-ref", "refs/remotes/origin/main", release)
     git("switch", "dev")
     git("switch", "-c", "manual-backfill")
-    (tmp_path / "MANUAL.md").write_text("human reviewed release facts\n")
+    (tmp_path / "MANUAL.md").write_text(
+        "本手册对应 **0.1.0.dev1**，发布事实由人工核对。\n\n## 验收记录\n已验收。\n",
+        encoding="utf-8",
+    )
     git("add", ".")
     git("commit", "-m", "manual")
     return git, source, release
 
 
-def precheck(tmp_path, base, head):
+def precheck(tmp_path, base, head, *, fails=False):
     workflow = WORKFLOW.read_text(encoding="utf-8-sig")
     section = workflow.split("      - name: Identify manual-only published backfill\n", 1)[1]
     section = section.split("      - uses: astral-sh/setup-uv@", 1)[0]
@@ -63,9 +68,14 @@ def precheck(tmp_path, base, head):
         env=env,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         timeout=20,
         check=False,
     )
+    if fails:
+        assert result.returncode != 0
+        return result.stderr
     assert result.returncode == 0, result.stderr
     return output.read_text(encoding="utf-8-sig").strip(), (
         summary.read_text(encoding="utf-8-sig") if summary.exists() else ""
@@ -90,6 +100,43 @@ def test_other_changes_and_unknown_release_fall_back(release_repo, tmp_path):
     git("reset", "--hard", "HEAD^")
     git("tag", "-d", "v0.1.0.dev1")
     assert precheck(tmp_path, base, git("rev-parse", "HEAD"))[0] == "manual_only=false"
+
+
+def test_manual_other_sections_fall_back(release_repo, tmp_path):
+    git, base, _ = release_repo
+    (tmp_path / "MANUAL.md").write_text("## 更改安装步骤\n", encoding="utf-8")
+    git("add", "MANUAL.md")
+    git("commit", "-m", "unrelated manual change")
+    assert precheck(tmp_path, base, git("rev-parse", "HEAD"))[0] == "manual_only=false"
+
+
+def test_manual_fenced_command_changes_fall_back(release_repo, tmp_path):
+    git, base, _ = release_repo
+    with (tmp_path / "MANUAL.md").open("a", encoding="utf-8") as file:
+        file.write("\n```powershell\nInvoke-Example\n```\n")
+    git("add", "MANUAL.md")
+    git("commit", "-m", "add command")
+    assert precheck(tmp_path, base, git("rev-parse", "HEAD"))[0] == "manual_only=false"
+
+
+@pytest.mark.parametrize(
+    ("suffix", "message"),
+    [
+        (" [missing](missing.md)", "Manual local link"),
+        (" [outside](../outside.md)", "Manual local link"),
+        (" sk-" + "x" * 28, "Secret pattern"),
+        ("   ", "Manual diff formatting"),
+    ],
+)
+def test_manual_rejects_bad_links_secrets_and_whitespace(release_repo, tmp_path, suffix, message):
+    git, base, _ = release_repo
+    (tmp_path / "MANUAL.md").write_text(
+        "本手册对应 **0.1.0.dev1**，已发布。" + suffix + "\n\n## 验收记录\n已验收。\n",
+        encoding="utf-8",
+    )
+    git("add", "MANUAL.md")
+    git("commit", "-m", "backfill")
+    assert message in precheck(tmp_path, base, git("rev-parse", "HEAD"), fails=True)
 
 
 def test_release_relation_accepts_source_and_rejects_unrelated(release_repo, tmp_path):

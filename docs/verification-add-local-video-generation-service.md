@@ -287,3 +287,18 @@ Windows 对带 KILL_ON_JOB_CLOSE 标志的 Job 最后句柄关闭行为，以及
 - Release 标签指向已进入 main 的合并提交时，允许其发布来源（第二父提交）是目标分支祖先，不再错误要求合并提交自身是 dev 的祖先；不相关分支仍拒绝。仅修改已有普通 `MANUAL.md` 且本地发布标签和来源关系可确认时，工作流预检不安装依赖、不运行完整测试或构建，并明确声明由 Agent 和人工审查、未调用 Release API、未复用测试或产物；其他或关系不明场景保守回退。
 - 在隔离 Git 仓库运行实际工作流 PowerShell 预检，覆盖 main 合并提交不在 dev 祖先但发布来源在 dev、混入代码、标签缺失和不相关分支；与原 CI 测试合计 15 passed。工作流 YAML、PowerShell 语法和手册轻量路径的步骤条件静态检查通过；全仓 Ruff check／format、`git diff --check` 及工程主规范严格校验通过。未触发远端 CI、未验证实际 GitHub PR，也未合并 main；资源清理见清单。
 - 合并前再次运行隔离测试：15 passed in 10.31s；YAML／PowerShell 与手册单文件路径上安装、门禁、测试及构建的跳过条件核对通过，Ruff check／format 通过（176 文件）。当前仓库只读 Git 检查确认 v0.1.0.dev1 发布来源在 dev 历史中、标签在 main 历史中；实际 GitHub 手册单文件 PR 尚未运行，不能将隔离测试说成远端验收。
+# 2026-11-16 CI 调整阶段记录
+
+本地对现有 CI 增加按 PR 编号分组的过时运行取消；手动运行使用独立 run id。单手册轻量分类收窄到发布摘要段单行替换，加入差异空白、常见秘密模式和变更行本地链接检查；事实仍须人工核对。隔离测试覆盖其他手册章节回退。GitHub 实际并发取消、完整手册事实检查、日常检查分级、首次发布复用和受控发布入口尚未完成；未触发远程 CI 或发布。
+
+本轮执行 `uv run --frozen pytest tests/test_ci_manual_only.py tests/test_ci_backfill.py tests/test_ci_evidence.py -q`，16 passed；该测试未独立覆盖新增链接和秘密拒绝分支。修改的测试文件 Ruff 检查和格式检查、`git diff --check` 通过。
+
+后续隔离验证：新增 dev 文档分级、相同文件树可信完整检查复用及手册链接、秘密和空白拒绝测试；`uv run --frozen pytest tests/test_ci_docs.py tests/test_ci_reuse.py tests/test_ci_backfill.py tests/test_ci_manual_only.py -q --basetemp .cache/ci-lightweight-20261116` 为 30 passed，相关七个 Python 文件 Ruff check 与 format 检查通过。临时目录的 pytest 符号链接目标核实在该目录后单独解除，目录已删除。GitHub 实际运行、受控发布和资产缺失恢复尚未验证或实现，不能据此认定全部完成。
+
+受控发布入口实现进行中：纯模拟测试验证候选身份、摘要篡改、过期重建分支、main 变化拒绝及草稿核对后才发布；本地源码包和 wheel 经锁定依赖分别安装，入口版本检查通过。第一次强制离线安装因本机 uv 缓存缺少依赖失败，改为允许锁定依赖从包源补齐后成功；未调用供应商或发布。构建目录和临时安装环境已清理；真实 GitHub 发布、工作流和完整验收尚未执行。
+
+受控发布与证据单元回归 `uv run --frozen pytest tests/test_release_control.py tests/test_ci_reuse.py tests/test_ci_backfill.py tests/test_ci_evidence.py -q`：24 passed。两个 workflow 经 PyYAML 语法解析；这不代表 GitHub 事件、权限及发布操作已实测。相关 Python 代码 Ruff 检查及 `git diff --check` 通过。需要继续补齐工作流全路径隔离验证及实际 PR 检查，再进行 Git 交付。
+
+发布入口的安装验证进一步覆盖本地协议：分别从本次离线构建的 sdist 和 wheel，在独立虚拟环境中按锁文件安装依赖，运行 local 协议探针；两者均输出 `tools=23 ... local=ok`。使用占位密钥，未调用供应商；验证后构建目录及临时虚拟环境已清理。工作流中创建和发布 GitHub Release 的路径仅模拟测试，尚未真实发布。
+
+全量隔离测试 `uv run --frozen pytest -q --basetemp .cache/ci-full-20261116`：601 passed，耗时 554.51 秒；运行期间 CI 测试与工作流继续调整，因此该结果对应开始时收集的测试，最终 CI 相关修改另以 45 项定向测试验证。清理时确认 359 个测试链接指向该专用目录内，逐个解除后移除目录，复扫路径不存在。全仓 Ruff 与格式检查通过；实际 GitHub PR 对最终提交的检查仍待运行。
