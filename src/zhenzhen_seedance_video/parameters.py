@@ -58,7 +58,26 @@ def _keys(value, allowed, name):
     if not isinstance(value, dict):
         raise ParameterError("OBJECT_REQUIRED", name)
     if set(value) - set(allowed):
-        raise ParameterError("UNKNOWN_OR_INAPPLICABLE_FIELD", name)
+        known_mistakes = {"model_id", "ratio", "resolution", "generate_audio", "duration"}
+        invalid = sorted((set(value) - set(allowed)) & known_mistakes) if name == "request" else []
+        raise ParameterError("UNKNOWN_OR_INAPPLICABLE_FIELD", invalid[0] if invalid else name)
+
+
+def request_model(request, *, api_id):
+    """Validate the model field before authorization or material handling."""
+    _keys(
+        request, {"model", "prompt", "seconds", "images", "metadata", "enhance_prompt"}, "request"
+    )
+    if "model" not in request:
+        raise ParameterError("REQUIRED", "model")
+    if not isinstance(request["model"], str):
+        raise ParameterError("TYPE_MISMATCH", "model")
+    if "enhance_prompt" in request:
+        _boolean(request["enhance_prompt"], "enhance_prompt")
+    try:
+        return get_model(request["model"], api_id=api_id)
+    except ValueError:
+        raise ParameterError("MODEL_NOT_SUPPORTED", "model") from None
 
 
 def _boolean(value, name):
@@ -97,13 +116,7 @@ def normalize(request, *, api_id="seedance-video", media_facts=None, draft_fact=
     media_facts and draft_fact are internal evidence, never Agent 'verified'
     flags. Unknown remote media properties remain explicitly unverified.
     """
-    _keys(
-        request, {"model", "prompt", "seconds", "images", "metadata", "enhance_prompt"}, "request"
-    )
-    try:
-        model = get_model(request.get("model"), api_id=api_id)
-    except ValueError:
-        raise ParameterError("MODEL_NOT_SUPPORTED", "model") from None
+    model = request_model(request, api_id=api_id)
     try:
         explicit = json.dumps(request, allow_nan=False, sort_keys=True, separators=(",", ":"))
         payload = json.loads(explicit)
@@ -176,6 +189,8 @@ def normalize(request, *, api_id="seedance-video", media_facts=None, draft_fact=
         unresolved.add("UPSCALER_EXACT_DURATION_AND_SIZE_UNVERIFIED")
     else:
         prompt = payload.get("prompt")
+        if prompt is not None and not isinstance(prompt, str):
+            raise ParameterError("TYPE_MISMATCH", "prompt")
         if not isinstance(prompt, str) or not prompt.strip():
             raise ParameterError("REQUIRED", "prompt")
         payload.setdefault("enhance_prompt", False)
@@ -219,7 +234,9 @@ def _normal(model, payload, metadata, facts, unresolved, notices):
     if "seconds" in payload:
         seconds = payload["seconds"]
         high = 30 if model.generation == "2.5" else 15
-        if not isinstance(seconds, str) or seconds not in {str(n) for n in range(4, high + 1)}:
+        if not isinstance(seconds, str):
+            raise ParameterError("TYPE_MISMATCH", "seconds")
+        if seconds not in {str(n) for n in range(4, high + 1)}:
             raise ParameterError("INVALID_DURATION", "seconds")
         if model.generation == "2.0":
             unresolved.add("SECONDS_2_0_ENUM_PROVISIONAL")

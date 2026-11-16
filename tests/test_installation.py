@@ -5,6 +5,7 @@ import shutil
 import sqlite3
 import subprocess
 import tarfile
+import tomllib
 import zipfile
 from pathlib import Path
 
@@ -20,6 +21,7 @@ from zhenzhen_seedance_video.scheduler import Scheduler
 from zhenzhen_seedance_video.storage import Database
 
 REPO = Path(__file__).resolve().parents[1]
+VERSION = tomllib.loads((REPO / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
 
 
 async def command(args, **kwargs):
@@ -43,7 +45,7 @@ async def test_clean_source_install_stdio_discovery_and_external_state(tmp_path)
     with zipfile.ZipFile(wheel) as archive:
         assert all(
             n.startswith(
-                ("zhenzhen_seedance_video/", "zhenzhen_seedancevideo_mcp-0.1.0.dev1.dist-info/")
+                ("zhenzhen_seedance_video/", f"zhenzhen_seedancevideo_mcp-{VERSION}.dist-info/")
             )
             for n in archive.namelist()
         )
@@ -79,7 +81,7 @@ async def test_clean_source_install_stdio_discovery_and_external_state(tmp_path)
         ],
         env=environment,
     )
-    assert version.strip() == "0.1.0.dev1"
+    assert version.strip() == VERSION
     python = project / ".venv/Scripts/python.exe"
     location = await command(
         [
