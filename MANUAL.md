@@ -2,7 +2,7 @@
 
 ## 1. 环境准备与适用范围
 
-本手册对应 **0.1.0.dev2** 发布候选，预期标签 `v0.1.0.dev2`；正式发布、标签提交 SHA、资产摘要和本版本验收结果待确认。上一已发布版本为 [v0.1.0.dev1](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev1)。新 Schema 实际 Host 展示、完整产物集合和部分模型仍待核实，Job 生命周期限制未修复。
+本手册对应已发布的 [v0.1.0.dev2 开发预发行版](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev2)，标签提交 SHA 为 `d5165aa2ea362efb22e4305ff9a221ee1fbf888d`。源码包 SHA-256 为 `758af58b9b245c95b38472f9a3be950dfe55d6f31429a803aa77468b99b82d59`，wheel SHA-256 为 `83d4bbdcda15c9fc07633a1dce7352908362738cc76819c7955ad3fd5b55f03f`。新 Schema 实际 Host 展示、完整产物集合和部分模型仍待核实，Job 生命周期限制未修复。
 
 仅 Windows；需要 Git、PowerShell 7、uv、可获得的 Python 3.12.14 和 GitHub/包源访问权限。锁定 MCP SDK 2.3.0；传输为本地 stdio，协议版本由客户端与 SDK 协商，具体版本以检查输出为准。uv 安装时按锁文件取得依赖；代理／包源问题应在安装阶段处理。MCP 的网络代理配置不会自动配置 uv。Codex Desktop、Claude Desktop和DeepSeek Harness Desktop已有工具发现/共享查询证据，Codex与DSH已有跨Host主视频交付证据；具体版本和范围见[验证记录](docs/verification-add-local-video-generation-service.md)，不代表任意Host兼容保证。
 
@@ -38,7 +38,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $ProjectDir '.env'))) {
 
 ### 使用 Release 源码包
 
-发布后从仓库 Release `v0.1.0.dev2` 下载 `zhenzhen_seedancevideo_mcp-0.1.0.dev2.tar.gz` 和 `SHA256SUMS.txt`。发布前这些资产尚不可用。也可使用来源可信且另附 SHA-256 的本地构建包；即使版本号相同，本地构建的内容也可能不同，不应视为已发布资产。
+从仓库 Release `v0.1.0.dev2` 下载 `zhenzhen_seedancevideo_mcp-0.1.0.dev2.tar.gz` 和 `SHA256SUMS.txt`。也可使用来源可信且另附 SHA-256 的本地构建包；即使版本号相同，本地构建的内容也可能不同，不应视为已发布资产。
 
 在 PowerShell 执行。输入本机实际源码包路径；目标目录必须不存在，不覆盖已有安装。
 
@@ -112,9 +112,9 @@ uv --directory 'D:\MCP\zhenzhen-seedancevideo-mcp' run --no-sync zhenzhen-seedan
 
 ## 3. 本地可用性检查
 
-v0.1.0.dev2 候选包含模块 `zhenzhen_seedance_video.protocol_probe`；**已发布的 v0.1.0.dev0 不包含该模块**。首次安装时默认即为 `local`；在实际安装目录 `.env` 填写密钥后运行。该检查仅供本地接入验证；需要生成视频时完成检查后按[启用供应商生成](#启用供应商生成)切换 `provider` 并重启。已在 `provider` 使用任务的用户不要为了检查而忽略共享后端停机和旧任务限制。
+v0.1.0.dev2 包含模块 `zhenzhen_seedance_video.protocol_probe`；**已发布的 v0.1.0.dev0 不包含该模块**。首次安装时默认即为 `local`；在实际安装目录 `.env` 填写密钥后运行。该检查仅供本地接入验证；需要生成视频时完成检查后按[启用供应商生成](#启用供应商生成)切换 `provider` 并重启。已在 `provider` 使用任务的用户不要为了检查而忽略共享后端停机和旧任务限制。
 
-发布前的工作区源码包及 wheel 已在隔离 Windows 环境安装并运行该检查；wheel 验证通过锁文件冻结同步准备依赖，再卸载源码安装并安装 wheel。v0.1.0.dev1 发行资产包含该模块，但该版本发行资产的独立安装运行以及空缓存离线安装尚未单独验证。
+v0.1.0.dev2 的受控发布准备在 Windows CI 中分别安装源码包与 wheel，并运行版本及 local 协议检查；依赖通过锁文件获取，不代表空缓存离线安装通过。实际 Host 对本版本新 Schema 的展示尚未验证。
 
 ```powershell
 uv --directory 'D:\MCP\zhenzhen-seedancevideo-mcp' run --no-sync python -m zhenzhen_seedance_video.protocol_probe
@@ -242,5 +242,7 @@ API Key 用于供应商；本地前后端 RPC 使用受当前用户目录权限�
 ## 验收记录
 
 Windows Sandbox 安装、三款实际 Host 工具发现和 Codex／DSH 的一次真实跨 Host 主视频交付分别有证据；见[验证记录](docs/verification-add-local-video-generation-service.md)及[业务验收](docs/host-delivery-acceptance-plan.md)。同版本安装切换隔离演练不代表跨版本升级／回滚通过；历史[验收模板](docs/windows-host-acceptance.md)中的旧状态按记录时点阅读。
+
+v0.1.0.dev2 的本地 Windows 全量隔离测试为 616 项通过；发布候选复用了功能 PR 的 Windows 检查并重新构建资产，受控发布准备分别验证了两种安装包的版本与 local 协议检查。既有真实 Host 和供应商业务证据不代表本版本的新 Schema 或完整产物集合已实测。
 
 启用与旧任务保护的详细步骤见[执行保护](docs/configuration.md#发行入口执行保护)。实际Host零调用验收必须保持local，不要为检查工具发现切到provider。
