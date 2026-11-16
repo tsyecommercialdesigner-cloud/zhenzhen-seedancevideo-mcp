@@ -1,10 +1,10 @@
 # 成员安装与维护手册
 
-本文对应 `v0.1.0.dev3` 发布候选；发布和正式验收结果待确认。
+本文对应已发布的 `v0.1.0.dev3` 开发预发行版；实际验收范围及仍待核实的事项见下方记录。
 
 ## 1. 环境准备与适用范围
 
-目标版本为 `v0.1.0.dev3` 开发预发行版；Release、标签提交 SHA、资产摘要和发布验收结果待确认。新 Schema 实际 Host 展示、完整产物集合和部分模型仍待核实，协议探针曾偶发失败且根因未定位，Job 生命周期限制未修复。
+固定版本命令对应已发布的 [v0.1.0.dev3 开发预发行版](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev3)，标签提交 SHA 为 `66a9c1075a1253361c2fb532f7dfc91f3c4a852e`。源码包 SHA-256 为 `82c9a32a03b45113a4eb254ab6c51f62f6aad7cad1af520f15811139f798ddd4`，wheel SHA-256 为 `e4dc85f5ba53f7f3222bbf2048d8f3b7797933cf9443f90ae9ea80f3442ec342`。新 Schema 实际 Host 展示、完整产物集合和部分模型仍待核实，协议探针曾偶发失败且根因未定位，Job 生命周期限制未修复。
 
 仅 Windows；需要 Git、PowerShell 7、uv、可获得的 Python 3.12.14 和 GitHub/包源访问权限。锁定 MCP SDK 2.3.0；传输为本地 stdio，协议版本由客户端与 SDK 协商，具体版本以检查输出为准。uv 安装时按锁文件取得依赖；代理／包源问题应在安装阶段处理。MCP 的网络代理配置不会自动配置 uv。Codex Desktop、Claude Desktop和DeepSeek Harness Desktop已有工具发现/共享查询证据，Codex与DSH已有跨Host主视频交付证据；具体版本和范围见[验证记录](docs/verification-add-local-video-generation-service.md)，不代表任意Host兼容保证。
 
@@ -250,6 +250,6 @@ if ($LASTEXITCODE -ne 0) { throw '入口检查失败；不要启动 Host。' }
 
 Windows Sandbox 安装、三款实际 Host 工具发现和 Codex／DSH 的一次真实跨 Host 主视频交付分别有证据；见[验证记录](docs/verification-add-local-video-generation-service.md)及[业务验收](docs/host-delivery-acceptance-plan.md)。同版本安装切换隔离演练不代表跨版本升级／回滚通过；历史[验收模板](docs/windows-host-acceptance.md)中的旧状态按记录时点阅读。
 
-v0.1.0.dev2 的本地 Windows 全量隔离测试为 616 项通过；发布候选复用了功能 PR 的 Windows 检查并重新构建资产，受控发布准备分别验证了两种安装包的版本与 local 协议检查。既有真实 Host 和供应商业务证据不代表本版本的新 Schema 或完整产物集合已实测。
+v0.1.0.dev3 的本地 Windows 全量隔离测试为 637 项通过；功能 PR 的 Windows 检查通过，发布候选复用该检查并重新构建资产，受控发布准备分别验证了源码包和 wheel 的版本与 local 协议检查。既有真实 Host 和供应商业务证据不代表本版本的新 Schema 或完整产物集合已实测；协议探针历史偶发失败仍未定位。
 
 启用与旧任务保护的详细步骤见[执行保护](docs/configuration.md#发行入口执行保护)。实际Host零调用验收必须保持local，不要为检查工具发现切到provider。
