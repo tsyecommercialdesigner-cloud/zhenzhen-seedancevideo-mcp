@@ -14,6 +14,7 @@ import win32file
 
 from .artifact_files import pinned_directory
 from .cleanup_rules import cleanup_reason, enqueue_cleanup
+from .error_codes import PublicOperationError
 from .material_readers import material_readers
 from .materials import owned_path
 from .storage import StorageError
@@ -208,7 +209,7 @@ class CleanupService:
                 if str(target) != material["managed_path"] or await self.readers.thread(
                     target.exists
                 ):
-                    raise RuntimeError("CLEANUP_RETRIES_EXHAUSTED")
+                    raise PublicOperationError("CLEANUP_RETRIES_EXHAUSTED")
             else:
                 await self.readers.thread(delete_copy, self.root, material)
             self.hook("cleanup_after_delete")
@@ -298,7 +299,7 @@ class CleanupService:
                         (task_id,),
                     ).fetchone():
                         return _public(row)
-                    raise RuntimeError("MATERIAL_CLEANUP_NOT_AUTHORIZED")
+                    raise PublicOperationError("MATERIAL_CLEANUP_NOT_AUTHORIZED")
                 _version(row, expected_version)
                 for job in jobs:
                     c.execute(

@@ -8,6 +8,7 @@ import uuid
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+from .error_codes import PUBLIC_ERROR_CODES
 from .windows_security import protect_directory, reject_reparse_path
 
 CATALOG = {
@@ -17,7 +18,27 @@ CATALOG = {
     "QUERY_FAILED": ("查询暂未取得有效结果", True, ("get_task", "refresh_task")),
     "DOWNLOAD_FAILED": ("产物尚未完成下载", True, ("retry_task_download",)),
     "STORAGE_FAULT": ("本地持久化异常，自动执行已受保护", False, ("get_service_status",)),
+    "STORAGE_CONSTRAINT": ("本地数据约束未满足，请查询当前状态", False, ("get_task",)),
+    "PROVIDER_EXECUTION_NOT_AUTHORIZED": (
+        "该任务缺少供应商执行授权，请先核对原任务状态",
+        False,
+        ("get_task",),
+    ),
     "INTERNAL_ERROR": ("本地操作异常，请按诊断标识核查", False, ("get_service_status",)),
+    "PROMPT_AUTHORIZATION_REQUIRED": (
+        "提示词优化需用户明确同意：可单次 allow_once，或查询并明确设置共享偏好",
+        False,
+        (
+            "get_prompt_optimization_policy",
+            "set_prompt_optimization_policy",
+            "preflight_video_task",
+        ),
+    ),
+    "TASK_NOT_FOUND": (
+        "本地任务不存在；可检查标识或用原 request_key 查找，不代表远端不存在",
+        False,
+        ("find_task_by_request_key", "list_tasks"),
+    ),
 }
 PARAMETER_CODES = frozenset(
     "AUTO_DURATION_REQUIRES_MINUS_ONE BOOLEAN_REQUIRED CANONICAL_CONTENT_REQUIRED "
@@ -35,6 +56,11 @@ CATALOG.update(
         for code in PARAMETER_CODES
     }
 )
+for _code in PUBLIC_ERROR_CODES:
+    CATALOG.setdefault(
+        _code, ("本地操作未完成，请按错误码检查状态", False, ("get_service_status",))
+    )
+CATALOG.setdefault("INVALID_TOOL_INPUT", ("工具输入无效", False, ("get_capabilities",)))
 SAFE_FIELDS = frozenset(
     "request model model_id prompt seconds images metadata metadata.resolution metadata.ratio "
     "metadata.generate_audio metadata.duration metadata.seed metadata.return_last_frame "

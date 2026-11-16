@@ -1,18 +1,20 @@
 # 成员安装与维护手册
 
+本文对应 `v0.1.0.dev3` 发布候选；发布和正式验收结果待确认。
+
 ## 1. 环境准备与适用范围
 
-本手册对应已发布的 [v0.1.0.dev2 开发预发行版](https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp/releases/tag/v0.1.0.dev2)，标签提交 SHA 为 `d5165aa2ea362efb22e4305ff9a221ee1fbf888d`。源码包 SHA-256 为 `758af58b9b245c95b38472f9a3be950dfe55d6f31429a803aa77468b99b82d59`，wheel SHA-256 为 `83d4bbdcda15c9fc07633a1dce7352908362738cc76819c7955ad3fd5b55f03f`。新 Schema 实际 Host 展示、完整产物集合和部分模型仍待核实，Job 生命周期限制未修复。
+目标版本为 `v0.1.0.dev3` 开发预发行版；Release、标签提交 SHA、资产摘要和发布验收结果待确认。新 Schema 实际 Host 展示、完整产物集合和部分模型仍待核实，协议探针曾偶发失败且根因未定位，Job 生命周期限制未修复。
 
 仅 Windows；需要 Git、PowerShell 7、uv、可获得的 Python 3.12.14 和 GitHub/包源访问权限。锁定 MCP SDK 2.3.0；传输为本地 stdio，协议版本由客户端与 SDK 协商，具体版本以检查输出为准。uv 安装时按锁文件取得依赖；代理／包源问题应在安装阶段处理。MCP 的网络代理配置不会自动配置 uv。Codex Desktop、Claude Desktop和DeepSeek Harness Desktop已有工具发现/共享查询证据，Codex与DSH已有跨Host主视频交付证据；具体版本和范围见[验证记录](docs/verification-add-local-video-generation-service.md)，不代表任意Host兼容保证。
 
-默认发行入口已接通已核实供应商适配器，但EXECUTION_MODE默认local，不执行供应商或下载网络请求。管理员显式配置provider并重启后，新正式提交可自动上传、生成、查询和下载。发行入口及实际Host已有相应验收证据；完整产物集合仍待核实。Job生命周期调查已关闭，但启动器终止可能连带结束后端的兼容性限制未修复，不重开排查。合成适配器只在开发测试目录内，不随发行包提供，也没有用户环境变量后门。请勿用“任务 accepted”判断已向供应商提交。
+本版本默认 provider，填写密钥后正式提交的新任务可自动上传、生成、查询和下载，可能产生费用；显式 local 不执行供应商及下载网络请求。旧版本的实际 Host 验收范围不能推广至本次变更；完整产物集合仍待核实。Job 生命周期调查已关闭，兼容性限制未修复。请勿用“任务 accepted”判断已向供应商提交。
 
-**想要生成视频？** 默认的 `local` 模式只供本地接入、预检和查询，不会调用供应商生成视频；看到 `generation_execution=not_implemented` 是当前未启用供应商调度，并不表示发行包没有供应商适配器。完成本地检查后，按下方[启用供应商生成](#启用供应商生成)设置 `provider` 并重启共享后端。正式提交新任务可能产生费用。
+**想要生成视频？** 本版本新安装默认 `provider`；填写密钥后，正式提交新任务可能产生费用。旧安装显式配置的 `local` 不会因升级自动改变，详见[启用供应商生成](#启用供应商生成)。
 
 ## 2. 项目初始化与固定版本安装
 
-建议使用 Git 固定发布标签；目标目录必须不存在，已有目录按升级步骤处理。
+使用 Git 固定发布标签安装；目标目录必须不存在，已有 Git 安装目录按升级步骤处理。
 
 ```powershell
 $ErrorActionPreference = 'Stop'
@@ -21,7 +23,7 @@ $ExpectedCommit = Read-Host '输入已发布 Release 中经核对的完整标签
 if ($ExpectedCommit -notmatch '^[0-9a-fA-F]{40}$') { throw '需要完整的 40 位提交 SHA。' }
 if (Test-Path -LiteralPath $ProjectDir) { throw '目标已存在，请按升级步骤处理。' }
 New-Item -ItemType Directory -Path 'D:\MCP' -Force | Out-Null
-git clone --branch v0.1.0.dev2 --single-branch https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp.git $ProjectDir
+git clone --branch v0.1.0.dev3 --single-branch https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp.git $ProjectDir
 if ($LASTEXITCODE -ne 0) { throw 'clone 失败，请检查仓库权限和网络。' }
 $ActualCommit = (git -C $ProjectDir rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $ActualCommit -ne $ExpectedCommit) { throw '标签提交不匹配。' }
@@ -34,34 +36,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $ProjectDir '.env'))) {
 }
 ```
 
-版本预期输出 `0.1.0.dev2`；标签 checkout 为 detached HEAD 是正常的。安装后用本地编辑器填写安装目录 `.env`。文件是明文，应限制 NTFS ACL，仅授权实际运行账户和必要管理账户读取。以下源码包安装是替代方式。
-
-### 使用 Release 源码包
-
-从仓库 Release `v0.1.0.dev2` 下载 `zhenzhen_seedancevideo_mcp-0.1.0.dev2.tar.gz` 和 `SHA256SUMS.txt`。也可使用来源可信且另附 SHA-256 的本地构建包；即使版本号相同，本地构建的内容也可能不同，不应视为已发布资产。
-
-在 PowerShell 执行。输入本机实际源码包路径；目标目录必须不存在，不覆盖已有安装。
-
-```powershell
-$ErrorActionPreference = 'Stop'
-$Archive = (Resolve-Path -LiteralPath (Read-Host '输入已核对 SHA-256 的源码包绝对路径')).Path
-$ExpectedSHA256 = Read-Host '输入可信 SHA256SUMS.txt 中该源码包的 SHA-256'
-if ((Get-FileHash -LiteralPath $Archive -Algorithm SHA256).Hash -ne $ExpectedSHA256) { throw '源码包 SHA-256 不匹配。' }
-$ProjectDir = 'D:\MCP\zhenzhen-seedancevideo-mcp'
-if (Test-Path -LiteralPath $ProjectDir) { throw '目标已存在，请按升级流程处理。' }
-New-Item -ItemType Directory -Path $ProjectDir | Out-Null
-tar -xf $Archive -C $ProjectDir --strip-components 1
-if ($LASTEXITCODE -ne 0) { throw '解包失败，停止安装。' }
-uv --directory $ProjectDir sync --frozen --no-dev
-if ($LASTEXITCODE -ne 0) { throw '冻结安装失败，停止接入。' }
-uv --directory $ProjectDir run --no-sync zhenzhen-seedance-video --version
-if ($LASTEXITCODE -ne 0) { throw '入口检查失败。' }
-if (-not (Test-Path -LiteralPath (Join-Path $ProjectDir '.env'))) {
-    [IO.File]::Copy((Join-Path $ProjectDir '.env.example'), (Join-Path $ProjectDir '.env'), $false)
-}
-```
-
-预期版本 0.1.0.dev2。源码包包含 uv.lock、源码和文档；wheel 可安装，但单独 wheel 不携带完整 uv 项目，成员默认使用上述源码包。安装不依赖维护者 `.venv`、测试文件或用户 HOME 中的 `.env`。
+版本预期输出 `0.1.0.dev3`；标签 checkout 为 detached HEAD 是正常的。安装后用本地编辑器填写安装目录 `.env`。文件是明文，应限制 NTFS ACL，仅授权实际运行账户和必要管理账户读取。安装不依赖维护者 `.venv`、测试文件或用户 HOME 中的 `.env`。
 
 ### 配置与初始化
 
@@ -90,8 +65,8 @@ if ($LASTEXITCODE -ne 0) { throw '无法打开 .env，请使用本地文本编�
 
 ### 启用供应商生成
 
-1. 先按第 3 节在 `local` 模式完成无生成副作用的接入检查。该检查只证明本地协议可用，不会生成视频；检查脚本不支持 `provider` 模式。
-2. 如需实际生成，在上述 Notepad 打开的**实际安装目录** `.env` 中，填写有效的 `ZHENZHEN_SEEDANCE_API_KEY`，并将已有模式行改为 `ZHENZHEN_SEEDANCE_EXECUTION_MODE=provider`。保存为 UTF-8；不要重复添加同名字段。有效模式只有 `local` 和 `provider`，不要填写 `remote`。若使用进程／当前用户环境变量，须先删除或注释 `.env` 中对应字段，因为文件优先且空值不回退。
+1. 在实际安装目录 `.env` 填写 `ZHENZHEN_SEEDANCE_API_KEY`；本版本模板默认 `provider`，v0.1.0.dev2 模板默认 `local`。第 3 节的本地检查可选；隔离探针不要求更改用户配置，不调用供应商。其他版本按其标签中的手册操作。
+2. 若有效模式为 `local`，需要生成时将安装目录 `.env` 中的模式行改为 `ZHENZHEN_SEEDANCE_EXECUTION_MODE=provider`；该行缺失但旧版本仍默认为 local 时，添加该行。保存为 UTF-8，不要重复添加同名字段。有效模式只有 `local` 和 `provider`。使用进程／用户环境变量时须先删除或注释 `.env` 中对应字段，因为文件优先且空值不回退。
 3. 正常退出同一 Windows 用户下连接此服务的**所有 Host**，等待并确认共享后端退出，然后重新启动 Host。不能确认旧后端退出时先停止排查；不要强杀后端或删除任务库。不同 Host 显式配置冲突时，新接入方会被拒绝。
 4. 在 Host 中调用 `get_service_status({})`。期望 `execution_mode=provider`、`generation_execution=adapter_installed`；在 Host 已连接且后端正常调度时 `dispatch_allowed=true`。若仍显示 `local` 或 `not_implemented`，检查正在使用的安装目录 `.env`、配置优先级和旧后端是否退出；若显示配置冲突，统一各 Host 设置后重新启动。`provider=unverified` 表示未通过启动健康探测验证上游，并不证明供应商连接成功。
 5. 检查模型能力并可选运行无生成副作用的预检。确认用户已授权费用后，正式提交**新任务**，使用该新任务独有且稳定的 `request_key`；后端自动提交、查询和下载。正式提交可能产生费用，预检通过或任务 `accepted` 不代表上游已经接收或生成成功。
@@ -112,7 +87,7 @@ uv --directory 'D:\MCP\zhenzhen-seedancevideo-mcp' run --no-sync zhenzhen-seedan
 
 ## 3. 本地可用性检查
 
-v0.1.0.dev2 包含模块 `zhenzhen_seedance_video.protocol_probe`；**已发布的 v0.1.0.dev0 不包含该模块**。首次安装时默认即为 `local`；在实际安装目录 `.env` 填写密钥后运行。该检查仅供本地接入验证；需要生成视频时完成检查后按[启用供应商生成](#启用供应商生成)切换 `provider` 并重启。已在 `provider` 使用任务的用户不要为了检查而忽略共享后端停机和旧任务限制。
+本版本协议检查使用独立 local 配置和状态，不要求切换用户的 provider 配置。v0.1.0.dev2 检查行为见该标签的手册；v0.1.0.dev0 不包含此模块。
 
 v0.1.0.dev2 的受控发布准备在 Windows CI 中分别安装源码包与 wheel，并运行版本及 local 协议检查；依赖通过锁文件获取，不代表空缓存离线安装通过。实际 Host 对本版本新 Schema 的展示尚未验证。
 
@@ -121,13 +96,13 @@ uv --directory 'D:\MCP\zhenzhen-seedancevideo-mcp' run --no-sync python -m zhenz
 if ($LASTEXITCODE -ne 0) { throw '本地协议检查失败，请查看脱敏错误。' }
 ```
 
-预期退出码 0，输出协商协议版本、工具数、`resources=0 templates=0 prompts=0 local=ok`；检查使用独立临时状态目录、120 秒异步超时和只读能力及状态查询，不提交任务、不调用供应商。超时后的进程收尾可能额外耗时。provider 模式被拒绝；失败时返回非零退出码，仅报告错误类别和隔离目录路径，不输出子进程原始诊断；隔离目录可能保留以供人工核对，不删除用户状态。成功信息仅在隔离目录清理成功后输出。此脚本仅覆盖 SDK stdio，不代表实际 Host 或供应商验收。当前 v0.1.0.dev0 用户继续通过 Host 调用以下只读工具：
+预期退出码 0，输出协商协议版本、工具数、`resources=0 templates=0 prompts=0 local=ok`；检查使用独立临时配置和状态、占位密钥、120 秒异步超时及只读查询，不提交任务、不调用供应商。超时后的进程收尾可能额外耗时；失败时仅报告错误类别和隔离目录路径，隔离目录可能保留。成功信息仅在清理成功后输出。此脚本仅覆盖 SDK stdio，不代表实际 Host 或供应商验收。Host 可另外调用以下只读工具：
 
 1. 发现 `get_service_status` 与 `get_capabilities`；缺失即连接或发现失败。
-2. 调用 `get_service_status({})`，确认 `execution_mode=local`、`dispatch_allowed=false`，并检查 `storage_fault`。`provider=unverified` 不表示上游已验证。
+2. 调用 `get_service_status({})`，检查 `execution_mode` 和 `storage_fault`。provider 模式下正常调度为 `adapter_installed`；`provider=unverified` 不表示上游已验证。
 3. 调用 `get_capabilities({})`，预期列出 `seedance-video` 26 个模型与独立 `zhenzhen-upscaler`；返回错误或超时均不视为通过。
 
-Host 检查不提交生成任务、不调用供应商，但连接会启动或接入本地后端并访问同用户状态库；如不希望接入现有任务库，请先在专用隔离 Windows 用户或环境中检查。Host 的调用超时和错误按实际客户端显示，不把版本命令当作协议验证。Sandbox 的 SDK stdio 验证及实际 Host 验证范围见[验收记录](docs/verification-add-local-video-generation-service.md)。
+Host 只读检查自身不提交生成任务，但连接会启动或接入本地后端并访问同用户状态库；provider 模式启动可能恢复此前已授权的任务并访问供应商。要保证隔离检查不触发这些行为，请使用专用隔离 Windows 用户或环境及显式 local 配置。Host 的调用超时和错误按实际客户端显示，不把版本命令当作协议验证。Sandbox 的 SDK stdio 验证及实际 Host 验证范围见[验收记录](docs/verification-add-local-video-generation-service.md)。
 
 ## 4. 本地客户端配置
 
@@ -136,7 +111,7 @@ Host 检查不提交生成任务、不调用供应商，但连接会启动或接
 Codex Desktop 的 TOML 服务表：
 
 ```toml
-[mcp_servers.zhenzhen-seedance-video]
+[mcp_servers.zhenzhen-seedancevideo-mcp]
 command = "uv"
 args = ["--directory", "D:\\MCP\\zhenzhen-seedancevideo-mcp", "run", "--no-sync", "zhenzhen-seedance-video", "stdio"]
 ```
@@ -146,7 +121,7 @@ Claude Desktop（Claude-3p）的 JSON 服务项；仅合并 `mcpServers` 下的�
 ```json
 {
   "mcpServers": {
-    "zhenzhen-seedance-video": {
+    "zhenzhen-seedancevideo-mcp": {
       "command": "uv",
       "args": [
         "--directory",
@@ -161,14 +136,14 @@ Claude Desktop（Claude-3p）的 JSON 服务项；仅合并 `mcpServers` 下的�
 }
 ```
 
-DeepSeek Harness 的 `cordis.patch.yml` 中合并以下独立 `insert`，先检查现有条目，避免相同 serverName 重复。DSH 中 `seedance-video` 是本服务的短别名，与上面的 `zhenzhen-seedance-video` 一一对应；请先确认该别名未被其他服务占用。根据本机 DSH 官方文档镜像（dsh-plugin-guide 0.3.39）核对字段，实际 Desktop 曾以隔离安装完成工具发现；下面 `uv` 命令组合仅为配置示例，须在目标 Host 验证。
+DeepSeek Harness 的 `cordis.patch.yml` 中合并以下独立 `insert`，先检查现有条目，避免相同 serverName 重复。旧配置可能使用 `seedance-video` 或 `zhenzhen-seedance-video`；核对归属后手动迁移到统一名称，避免同一 Host 重复注册。不会自动修改 Host 配置。新名称在实际 Host 的表现尚未验证。
 
 ```yaml
 - insert:
-    - id: seedance-video
+    - id: zhenzhen-seedancevideo-mcp
       name: '@deepseek-ai/dsh-mcp-client'
       config:
-        serverName: seedance-video
+        serverName: zhenzhen-seedancevideo-mcp
         transport: stdio
         command: uv
         args:
@@ -201,11 +176,43 @@ API Key 用于供应商；本地前后端 RPC 使用受当前用户目录权限�
 
 ### 升级与回滚
 
-1. 记录当前包版本、包 SHA-256 和可用的发布 SHA。正常退出全部 Host，确认旧后端结束；不能确认时停止维护。
-2. 保留私有 `.env` 原文件、权限及旧安装，不用解包覆盖它。发布后下载目标版本 v0.1.0.dev2 的源码包并核对 SHA-256，按上面的首次安装步骤将其安装到独立候选目录；不要启动或填写新密钥探测供应商。
-3. 首次安装步骤会在候选目录创建空密钥 `.env` 模板。确认该候选文件确为本次新建的空模板后，在停机窗口由用户安全替换为原 `.env` 的私有副本；如果候选已含任何用户配置，停止并手工合并，不能覆盖。核对内容摘要和 NTFS 权限，记录原／新 Host 路径。状态与输出不迁移，备份按 [离线维护](docs/storage-recovery.md) 完成。
-4. 新包冻结安装和版本检查通过后，将 Host 的 `--directory` 指向候选目录，重启并执行第 3 节的工具发现与本地状态检查；检查失败时停止并按第 5 步评估回滚。工作区有源码改动或未跟踪冲突时先停止，不强制覆盖。
-5. 回滚程序仅当旧程序支持现有 schema 时进行：退出所有 Host，恢复原 Host 路径及旧安装，保留当前任务库。过新 schema 明确拒绝，不能降级或重建空库。首期没有自动升级／回滚命令。
+以下适用于以 `git clone` 安装的目录。先正常退出同一 Windows 用户下的全部 Host，并确认共享后端已退出；无法确认时停止。记录当前版本、完整提交 SHA 和 Host 路径；按[离线维护](docs/storage-recovery.md)在私有位置备份 `.env`、其权限、任务状态、托管素材及实际输出目录。**备份不能替代下面的数据兼容检查。**
+
+从目标版本的 Release 核对标签与完整提交 SHA，并阅读该版本升级说明及数据库兼容要求。每次发布候选须提前将首次安装和下方升级命令中的目标标签、预期版本更新为本次目标，核对包版本及锁文件；尚未发生的发布和验收标为待确认。发布后按实际 Release 回填完整提交 SHA、Release 信息及验收范围，保留未验证项，不改写已发布标签及资产。原目录 `.env` 保持原样；如新版本有必需配置字段，按说明手动合并，不用新模板覆盖。建议将新任务的输出配置在安装目录外；已接收任务记录的输出目录不会自动改址，保留原产物并另行备份。
+
+安装时按标签克隆会处于 detached HEAD，因此不使用 `git pull` 跟随分支。下面先获取指定标签、核对 SHA，再切换到该标签；请替换目录和目标标签，输入 Release 中核对过的完整 SHA：
+
+```powershell
+$ErrorActionPreference = 'Stop'
+$ProjectDir = 'D:\MCP\zhenzhen-seedancevideo-mcp'
+$TargetTag = 'v0.1.0.dev3' # 目标标签发布后使用；其他版本请替换
+$ExpectedCommit = Read-Host '输入目标 Release 中经核对的完整提交 SHA'
+if ($ExpectedCommit -notmatch '^[0-9a-fA-F]{40}$') { throw '需要完整的 40 位提交 SHA。' }
+$Origin = git -C $ProjectDir remote get-url origin
+if ($LASTEXITCODE -ne 0 -or $Origin -ne 'https://github.com/tsyecommercialdesigner-cloud/zhenzhen-seedancevideo-mcp.git') { throw '仓库地址不符，请先核对。' }
+$Changes = git -C $ProjectDir status --porcelain --untracked-files=normal
+if ($LASTEXITCODE -ne 0) { throw '无法检查仓库状态。' }
+if ($Changes) { throw '存在本地改动或未跟踪文件；请先安全保留并处理，不要强制覆盖。' }
+$PreviousCommit = git -C $ProjectDir rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw '无法记录原提交。' }
+Write-Host "升级前提交：$PreviousCommit；请妥善记录供回滚。"
+git -C $ProjectDir fetch origin tag $TargetTag
+if ($LASTEXITCODE -ne 0) { throw '获取标签失败，请核对网络及本地标签。' }
+$TargetCommit = git -C $ProjectDir rev-parse --verify "refs/tags/$TargetTag^{commit}"
+if ($LASTEXITCODE -ne 0 -or $TargetCommit -ne $ExpectedCommit) { throw '目标标签提交与 Release 不一致，停止升级。' }
+git -C $ProjectDir switch --detach --no-overwrite-ignore "refs/tags/$TargetTag"
+if ($LASTEXITCODE -ne 0) { throw '切换失败；请检查文件冲突，保留配置与数据。' }
+uv --directory $ProjectDir sync --frozen --no-dev
+if ($LASTEXITCODE -ne 0) { throw '锁定安装失败；不要启动 Host。' }
+uv --directory $ProjectDir run --no-sync zhenzhen-seedance-video --version
+if ($LASTEXITCODE -ne 0) { throw '入口检查失败；不要启动 Host。' }
+```
+
+核对入口版本与目标 Release 一致后，在停机状态按第 3 节执行适用于目标版本的本地协议检查，再重启 Host 并检查工具发现和服务状态。原安装路径不变时无需修改 Host 路径；若保留的 `.env` 显式设置 `local`，升级不会自动改成 `provider`。本地检查不代表已验证供应商或跨版本升级。
+
+工作区中的未跟踪产物不一定阻止 Git 更新，但若目标版本需要写入同一路径则 Git 会拒绝；已跟踪文件的本地修改也可能造成冲突。本手册命令更保守：只要 `git status` 报告本地改动或未跟踪文件就停止。`.gitignore` 不涵盖所有输出目录，且被忽略文件不出现在普通状态中；`--no-overwrite-ignore` 会拒绝覆盖与目标版本冲突的忽略文件。不要用 `git reset --hard`、`git clean` 或强制切换处理产物。
+
+需要回滚时，先退出全部 Host 并确认后端停止，核对旧版本能够读取当前数据库 schema；不兼容时停止并保留当前库。确认兼容且工作区干净后，可用 `git -C $ProjectDir switch --detach --no-overwrite-ignore $PreviousCommit` 切回记录的提交，再执行 `uv --directory $ProjectDir sync --frozen --no-dev`、版本和本地协议检查。分别检查每条命令是否成功；失败不要启动 Host。回滚代码不会回滚数据或撤销远端任务。v0.1.0.dev1 → v0.1.0.dev2 → v0.1.0.dev1 已在 Windows 隔离 local 环境演练，使用合成本地任务和登记的测试产物；不代表真实用户数据、其他版本、schema 迁移或供应商任务均兼容，详见[验证记录](docs/verification-add-local-video-generation-service.md)。
 
 数据备份不能当作程序回滚。旧备份会遗漏备份后发生的远端请求；禁止恢复 queued 快照后直接启动派发。必须先在离线副本中将所有未结束任务置为需要核对、保留未知占位，结合原库和远端可靠证据处理窗口。未核实上游反查时保持待处理，不自动重派。详见状态维护说明；首期无自动恢复备份工具。
 
@@ -227,7 +234,7 @@ API Key 用于供应商；本地前后端 RPC 使用受当前用户目录权限�
 
 ## 10. FAQ 与验证范围
 
-- 为什么安装后不能生成，或看到 `not_implemented`？默认 `local` 不派发供应商任务。按[启用供应商生成](#启用供应商生成)设置 `provider` 并重启后，新接收任务才获执行授权；旧/local任务不会自动获得授权。
+- 为什么安装后不能生成，或看到 `not_implemented`？检查实际安装目录、模式及共享后端。显式 `local` 不派发供应商任务；按[启用供应商生成](#启用供应商生成)设置 `provider` 并重启后，新接收任务才获执行授权；旧 local 任务不会自动获得授权。
 - 多个 Host 是否会多开生成额度？同一 Windows 用户共享后端与总额度；已有跨 Host 接续证据，特定 Host 与异常退出兼容性仍须按版本核对。
 - 更新 `.env` 是否立即生效？后端统一配置，重启生效；提示词优化授权是可即时修改的独立业务偏好。
 - 能否删除任务库修复？不能。未知付费任务仍可能运行，应保留记录并核对。

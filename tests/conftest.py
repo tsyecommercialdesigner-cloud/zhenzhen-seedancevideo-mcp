@@ -30,6 +30,8 @@ def isolated_environment(monkeypatch, tmp_path):
         }:
             monkeypatch.delenv(name)
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local-app-data"))
+    # Tests opt in to a synthetic adapter explicitly; default subprocesses stay offline.
+    monkeypatch.setenv("ZHENZHEN_SEEDANCE_EXECUTION_MODE", "local")
     monkeypatch.chdir(tmp_path)
 
     # Isolate both new configuration sources, including inherited child processes.
@@ -45,7 +47,22 @@ def isolated_environment(monkeypatch, tmp_path):
         "from pathlib import Path\n"
         "from zhenzhen_seedance_video import config\n"
         f"config.installation_root = lambda: Path({str(install)!r})\n"
-        "config._read_user_environment = lambda excluded: {}\n",
+        "config._read_user_environment = lambda excluded: {}\n"
+        "import socket\n"
+        "_original_resolve = socket.getaddrinfo\n"
+        "def _isolated_resolve(host, port, *args, **kwargs):\n"
+        "    if host not in ('127.0.0.1', '::1', 'localhost'):\n"
+        "        raise OSError('external network disabled in child test process')\n"
+        "    return _original_resolve(host, port, *args, **kwargs)\n"
+        "socket.getaddrinfo = _isolated_resolve\n"
+        "_original_connect = socket.socket.connect\n"
+        "_original_connect_ex = socket.socket.connect_ex\n"
+        "def _guard_connect(original, sock, address):\n"
+        "    if not isinstance(address, tuple) or address[0] not in ('127.0.0.1', '::1'):\n"
+        "        raise OSError('external network disabled in child test process')\n"
+        "    return original(sock, address)\n"
+        "socket.socket.connect = lambda s, a: _guard_connect(_original_connect, s, a)\n"
+        "socket.socket.connect_ex = lambda s, a: _guard_connect(_original_connect_ex, s, a)\n",
         encoding="utf-8",
     )
     monkeypatch.setenv("PYTHONPATH", str(bootstrap))

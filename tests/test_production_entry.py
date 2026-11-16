@@ -200,6 +200,12 @@ def test_mode_priority_conflicts_and_invalid(monkeypatch, tmp_path):
         load_configuration()
 
 
+def test_provider_is_default_when_mode_is_absent(monkeypatch):
+    monkeypatch.setenv("ZHENZHEN_SEEDANCE_API_KEY", "synthetic")
+    monkeypatch.delenv("ZHENZHEN_SEEDANCE_EXECUTION_MODE")
+    assert load_configuration().execution_mode == "provider"
+
+
 async def test_quarantine_failure_rolls_back(monkeypatch, harness):
     run, _ = harness
 

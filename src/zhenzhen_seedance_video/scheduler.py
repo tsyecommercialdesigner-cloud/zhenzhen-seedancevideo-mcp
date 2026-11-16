@@ -391,6 +391,16 @@ class Scheduler:
             ],
             write=False,
         )
+
+        async def query_if_allowed(task_id):
+            try:
+                await self.query(task_id)
+            except StateError as error:
+                # The final lease can disappear between scheduling and acquiring a slot.
+                # This is an expected pause, not a fatal lifecycle worker failure.
+                if str(error) != "NETWORK_WORK_PAUSED":
+                    raise
+
         operations = []
         for row in rows:
             if row["connection_binding"] != self.binding:
@@ -404,7 +414,7 @@ class Scheduler:
             if budget["remaining_budget"] <= 0:
                 await self._attention(row["task_id"], "QUERY_RETRIES_EXHAUSTED")
             elif not budget["next_attempt_at"] or self.now() >= seconds(budget["next_attempt_at"]):
-                operations.append(self.query(row["task_id"]))
+                operations.append(query_if_allowed(row["task_id"]))
         await asyncio.gather(*operations)
 
     async def query(self, task_id, *, explicit=False):

@@ -45,7 +45,7 @@ def create_server(connect=connect_or_start):
         finally:
             await client.close()
 
-    server = MCPServer("zhenzhen-seedance-video", lifespan=lifespan)
+    server = MCPServer("zhenzhen-seedancevideo-mcp", lifespan=lifespan)
 
     def tool(name):
         return server.tool(
@@ -127,6 +127,7 @@ def create_server(connect=connect_or_start):
         remote_state: str | None = None,
         attention_reason: str | None = None,
         needs_attention: bool = False,
+        actionable_only: bool = False,
     ) -> dict[str, Any]:
         """稳定游标分页；异常非消费式；不承诺跨页快照。"""
         return await client.call(
@@ -137,6 +138,7 @@ def create_server(connect=connect_or_start):
                 "remote_state": remote_state,
                 "attention_reason": attention_reason,
                 "needs_attention": needs_attention,
+                "actionable_only": actionable_only,
             },
             wait_seconds=120,
         )

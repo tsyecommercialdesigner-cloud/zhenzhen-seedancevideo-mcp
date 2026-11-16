@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from types import MappingProxyType
 
+from .error_codes import PublicInputError
+
 RULE_VERSION = "seedance-contract-2026-11-13.1"
 BASE_URL = "https://api.seedance.nz"
 SUBMIT_PATH = "/v1/video/generations"
@@ -45,4 +47,4 @@ def get_model(model_id: str, *, api_id: str = "seedance-video") -> Model:
         return UPSCALER
     if api_id == "seedance-video" and isinstance(model_id, str) and model_id in VIDEO_MODELS:
         return VIDEO_MODELS[model_id]
-    raise ValueError("MODEL_NOT_SUPPORTED")
+    raise PublicInputError("MODEL_NOT_SUPPORTED")

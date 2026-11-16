@@ -1,7 +1,7 @@
 # Agent 工具使用手册
 
-适用版本：0.1.0.dev1，MCP SDK 2.3.0，Windows。
-当前发行入口已接通供应商适配器，默认 `execution_mode=local` **不能生成视频**，显式配置 `provider` 并重启共享后端才启用新任务执行；具体步骤和旧任务限制见[成员手册](../MANUAL.md#启用供应商生成)。实际 Host 工具发现及 Codex／DSH 跨 Host 主视频交付已有分范围证据，详见[验证记录](verification-add-local-video-generation-service.md)；不能把这些证据推广为全部模型、Host 或完整产物集合均已验收。
+适用范围：本版本实现，MCP SDK 2.3.0，Windows。
+本版本默认 `execution_mode=provider`，填写密钥后新任务可自动执行并可能收费；v0.1.0.dev2 的默认仍为 local。已有显式 local 配置继续生效；具体步骤和旧任务限制见[成员手册](../MANUAL.md#启用供应商生成)。既有实际 Host 与供应商证据不代表新版本或完整产物集合均已验收。
 
 ## 启动与配置
 
@@ -12,7 +12,7 @@
 ```json
 {
   "mcpServers": {
-    "zhenzhen-seedance-video": {
+    "zhenzhen-seedancevideo-mcp": {
       "command": "uv",
       "args": [
         "--directory",
@@ -35,6 +35,8 @@
 2. `get_capabilities({"api_id":"seedance-video","model_id":"seedance-2.0-mini-t2v"})` 读取参数限制与待核实能力。
 3. 可选 `preflight_video_task({"request":{"model":"seedance-2.0-mini-t2v","prompt":"一只狐狸在雪地奔跑"}})`。预检不上传、不创建任务，不保证稍后接收；本地素材只检查参数形状，不冒充已经读取验证。
 
+   当 `display_stage=downloaded_unverified` 时，已登记产物均就绪但完整集合未知；原 `stage`、`delivery`、`attention` 和 `attention_count` 保持兼容。`advisory_reasons` 与 `actionable_reasons` 区分提示与待处理原因，`actionable_attention_count` 统计有待处理原因的任务；`list_tasks(actionable_only=true)` 可分页筛选。输入托管素材继续保留，使用 `list_artifacts` 后按产物核验或复制。
+
    工具 Schema 列出请求的联合字段；按模型调用 `get_capabilities` 查看适用条件。普通生成使用 `request.model`、字符串 `request.seconds`，`ratio` 和 `resolution` 放在 `request.metadata`。例如：`{"model":"seedance-2.0-mini-t2v","prompt":"一只狐狸在雪地奔跑","seconds":"4","metadata":{"resolution":"480p","ratio":"16:9","generate_audio":false}}`。样片转成片及超分的必填字段不同，不要求普通生成的提示词。普通生成省略 `generate_audio` 时有效值为 true；预检的 `audio_source` 区分默认与显式值。
 
    `authorization` 和 `prompt_optimization_authorization` 均仅表示提示词优化的授权决定，并非生成开关。预检不授权或创建生成任务；provider 模式的正式提交被接收后授权供应商自动执行，local 模式接收不授予切换模式后的供应商执行授权。`estimated_charge: null` 表示没有可靠估价，不代表免费，提交可能产生费用；已返回的实际费用以任务查询为准。参数拒绝可查看 `diagnostic.details` 中安全字段名及修正提示。
@@ -55,6 +57,7 @@
 - `retry_material_cleanup(task_id, expected_version)`：只重试已登记清理待办，不允许任意路径删除。
 - `retry_task_download(task_id, expected_version, overwrite=false)`：恢复下载，异常目标显式覆盖；不重新生成。
 - `get_diagnostic(diagnostic_id)`：有界脱敏诊断，不输出原始日志。费用尚未返回是 null，不是 0；SUCCESS 与实际费用响应已有局部真实样例，不能推广到所有模型。
+- `PROMPT_AUTHORIZATION_REQUIRED` 表示需要用户对提示词优化作出明确决定；用户允许后可单次使用 `allow_once=true`，或明确设置共享偏好。`TASK_NOT_FOUND` 只表示本地任务未找到，可按原 request_key 找回，不代表远端不存在，也不授权重新提交。诊断 ID 可用 `get_diagnostic` 查回，详情只包含安全字段，不回显请求内容。
 - `upscale_video(request_key, request)`：独立入口固定 zhenzhen-upscaler，metadata.content 中恰好一个 video_url，目标分辨率默认 1080p；不接受生成提示词优化。不自动由生成任务触发收费超分。
 
 ## 可执行隔离演练

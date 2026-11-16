@@ -19,7 +19,7 @@ Windows 用户环境只读 `HKEY_CURRENT_USER\Environment`。Host 若仍携带�
 | 项 | 默认 | 规则 |
 | --- | --- | --- |
 | API_KEY | 无，必填 | 不含空白，不进入任务、日志、命令行 |
-| EXECUTION_MODE | local | local/provider；重启生效，显式provider启用新任务的供应商执行 |
+| EXECUTION_MODE | provider | local/provider；重启生效，provider 的新任务可自动供应商执行 |
 | OUTPUT_DIR | 用户数据根下 outputs | 本地绝对路径 |
 | PROXY_URL | 未配置，直连 | 显式 http/https 代理；不读系统代理、PAC 或 HTTP_PROXY |
 | PROXY_BYPASS | 无 | 逗号分隔域名、域后缀、IP 或 CIDR；不支持通配符 |
@@ -78,9 +78,9 @@ Windows 用户环境只读 `HKEY_CURRENT_USER\Environment`。Host 若仍携带�
 
 ## 发行入口执行保护
 
-**默认 `local` 不能生成视频。** 它不安装供应商调度，供应商请求和下载网络请求均阻断；本地预检、任务查询和已有产物复制仍可用。`generation_execution=not_implemented` 表示当前未启用调度，并不表示发行包没有供应商适配器。即使已有真实密钥，`local` 也不会自动切换为 `provider`。
+本版本默认 `provider`，填写密钥后可提交新任务，可能产生费用；v0.1.0.dev2 默认仍为 local。显式 `local` 不安装供应商调度，供应商及下载网络请求均阻断；本地预检、查询和已有产物复制仍可用。`generation_execution=not_implemented` 表示当前未启用调度，不表示发行包缺少适配器。
 
-需要生成时，在实际安装目录 `.env` 填写有效的 `ZHENZHEN_SEEDANCE_API_KEY`，并将 `ZHENZHEN_SEEDANCE_EXECUTION_MODE` 的值改为 `provider`；只支持 `local` 和 `provider`，不支持 `remote`。同名字段不要重复；若改用环境变量，先删除或注释 `.env` 中对应字段，文件中的空值不会回退到环境变量。正常退出全部 Host，确认共享后端退出后重启；不同显式模式的 Host 会被配置冲突拒绝，不改变运行中的后端。完整操作见[成员手册](../MANUAL.md#启用供应商生成)。
+需要生成时，在实际安装目录 `.env` 填写 `ZHENZHEN_SEEDANCE_API_KEY`；新模板默认 provider，旧安装若显式设置 local 必须手动改为 provider。只支持 local 和 provider，不支持 remote。若改用环境变量，先删除或注释 `.env` 中对应字段，文件中的空值不会回退。修改后正常退出全部 Host，确认共享后端退出后重启；不同显式模式的 Host 会被配置冲突拒绝。完整操作见[成员手册](../MANUAL.md#启用供应商生成)。
 
 重启后用 `get_service_status({})` 检查 `execution_mode=provider`、`generation_execution=adapter_installed`，并在 Host 连接且调度正常时确认 `dispatch_allowed=true`。`provider=unverified` 与 `adapter_installed` 都不代表供应商连接已探测成功；网络、密钥和上游可用性仍须另行确认。预检不保证接收或生成成功，正式提交可能产生费用。
 

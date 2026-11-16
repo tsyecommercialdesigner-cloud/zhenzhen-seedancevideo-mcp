@@ -967,5 +967,145 @@
     "status": "removed; dedicated paths absent after rescan",
     "release_condition": "results recorded in verification log",
     "cleanup": "verified links and targets within each root before unlinking; removed exact test and evidence roots"
+  },
+  {
+    "path": ".cache/clarify-artifact-apply-20261116",
+    "purpose": "isolated tests, builds and package installation checks",
+    "version": "unreleased workspace after v0.1.0.dev2",
+    "task": "clarify-artifact-status-and-diagnostics",
+    "owner": "Agent",
+    "status": "removed; exact root absent on rescan; no recorded backend identity still alive",
+    "release_condition": "tests completed and results documented on 2026-11-16",
+    "cleanup": "checked process identities; unlinked 1333 verified in-root test links and removed the exact root"
+  },
+  {
+    "path": "dist/zhenzhen_seedancevideo_mcp-0.1.0.dev2.tar.gz; dist/zhenzhen_seedancevideo_mcp-0.1.0.dev2-py3-none-any.whl",
+    "purpose": "local build outputs generated during this change",
+    "version": "unreleased workspace using existing package version; not released assets",
+    "task": "clarify-artifact-status-and-diagnostics",
+    "owner": "Agent and user",
+    "status": "retained pending prior path provenance confirmation",
+    "release_condition": "confirm ownership of same-named preexisting local outputs before cleanup",
+    "cleanup": "after provenance review remove only confirmed disposable files; retain published artifacts"
+  },
+  {
+    "path": ".cache/verify-clarify-20261116",
+    "purpose": "OpenSpec verification and targeted isolated tests",
+    "version": "unreleased workspace after v0.1.0.dev2",
+    "task": "verify clarify-artifact-status-and-diagnostics",
+    "owner": "Agent",
+    "status": "removed; dedicated root absent on rescan; matching backend identities exited",
+    "release_condition": "verification recorded on 2026-11-16",
+    "cleanup": "verified 18 discovery records and 41 in-root links; unlinked links and removed exact dedicated root"
+  },
+  {
+    "path": ".cache/clarify-fix-20261116-b; .cache/clarify-fix-20261116-c; .cache/clarify-fix-20261116-d; .cache/clarify-fix-20261116-e",
+    "purpose": "isolated diagnostic and protocol probe sentinel tests",
+    "version": "unreleased workspace after v0.1.0.dev2",
+    "task": "clarify-artifact-status-and-diagnostics tasks 3.4 and 4.3",
+    "owner": "Agent",
+    "status": "removed; dedicated roots absent; recorded backends exited",
+    "release_condition": "test results recorded on 2026-11-16",
+    "cleanup": "checked process identities and removed 113 verified in-root test links before removing exact roots"
+  },
+  {
+    "path": ".cache/verify-errors-20261116",
+    "purpose": "isolated verification of error boundary and protocol probe",
+    "version": "unreleased workspace after v0.1.0.dev2",
+    "task": "verify clarify-artifact-status-and-diagnostics",
+    "owner": "Agent",
+    "status": "removed; dedicated root absent and no matching test backend alive",
+    "release_condition": "verification recorded on 2026-11-16",
+    "cleanup": "verified and unlinked 14 in-root test links, removed exact root, rescanned"
+  },
+  {
+    "path": ".cache/clarify-trusted-20261116; .cache/clarify-trusted-20261116-b; .cache/clarify-trusted-20261116-c",
+    "purpose": "isolated trusted error and diagnostic compatibility tests",
+    "version": "unreleased workspace after v0.1.0.dev2",
+    "task": "clarify-artifact-status-and-diagnostics tasks 3.4 and 3.5",
+    "owner": "Agent",
+    "status": "removed; dedicated roots absent and no matching test backend alive",
+    "release_condition": "verification recorded on 2026-11-16",
+    "cleanup": "verified and unlinked 117 in-root test links, removed exact roots, rescanned"
+  },
+  {
+    "path": ".cache/verify-trusted-20261116",
+    "purpose": "isolated verification of trusted exception boundary and diagnostics",
+    "version": "unreleased workspace after v0.1.0.dev2",
+    "task": "verify clarify-artifact-status-and-diagnostics",
+    "owner": "Agent",
+    "status": "removed; dedicated root absent and no matching test backend alive",
+    "release_condition": "verification recorded on 2026-11-16",
+    "cleanup": "verified and unlinked 15 in-root test links, removed exact root, rescanned"
+  },
+  {
+    "path": ".cache/clarify-stage-20261116; .cache/clarify-stage-20261116-b; .cache/clarify-stage-20261116-c",
+    "purpose": "isolated exception extraction and diagnostic stage tests",
+    "version": "unreleased workspace after v0.1.0.dev2",
+    "task": "clarify-artifact-status-and-diagnostics tasks 3.5 and 3.6",
+    "owner": "Agent",
+    "status": "removed; dedicated roots absent and no matching test backend alive",
+    "release_condition": "verification recorded on 2026-11-16",
+    "cleanup": "verified and unlinked 107 in-root test links, removed exact roots, rescanned"
+  },
+  {
+    "path": ".cache/verify-stage-20261116",
+    "purpose": "isolated verification of exception extraction and diagnostic stages",
+    "version": "unreleased workspace after v0.1.0.dev2",
+    "task": "verify clarify-artifact-status-and-diagnostics",
+    "owner": "Agent",
+    "status": "removed; dedicated root absent and no matching test backend alive",
+    "release_condition": "verification recorded on 2026-11-16",
+    "cleanup": "verified and unlinked 15 in-root test links, removed exact root, rescanned"
+  },
+  {
+    "path": ".cache/clarify-codes-20261116; .cache/clarify-codes-20261116-b; .cache/clarify-codes-20261116-c",
+    "purpose": "isolated dynamic trusted error-code and diagnostic tests",
+    "version": "unreleased workspace after v0.1.0.dev2",
+    "task": "clarify-artifact-status-and-diagnostics task 3.5",
+    "owner": "Agent",
+    "status": "removed; dedicated roots absent and no matching test backend alive",
+    "release_condition": "verification recorded on 2026-11-16",
+    "cleanup": "verified and unlinked 120 in-root test links, removed exact roots, rescanned"
+  },
+  {
+    "path": ".cache/dev3-candidate-build-20261116",
+    "purpose": "final local candidate build check after full test cleanup",
+    "version": "v0.1.0.dev3 candidate",
+    "task": "release verification and delivery",
+    "owner": "Agent",
+    "status": "removed; dedicated build directory absent",
+    "release_condition": "record result and verify build output",
+    "cleanup": "confirmed no reparse points, removed exact dedicated build directory and rescanned"
+  },
+  {
+    "path": ".cache/dev3-delivery-20261116",
+    "purpose": "isolated full test and build for dev3 release candidate",
+    "version": "v0.1.0.dev3 candidate",
+    "task": "release verification and delivery",
+    "owner": "Agent",
+    "status": "removed; no matching test processes and dedicated root absent",
+    "release_condition": "record results and confirm isolated test processes exit",
+    "cleanup": "confirmed no matching processes, verified and unlinked 387 in-root test links, removed the exact dedicated root and rescanned"
+  },
+  {
+    "path": ".cache/git-release-upgrade-20261116",
+    "purpose": "isolated tag upgrade and rollback using synthetic local task, configuration and artifacts",
+    "version": "v0.1.0.dev1 to v0.1.0.dev2 and rollback",
+    "task": "manual Git upgrade verification",
+    "owner": "Agent",
+    "status": "removed; no matching test process and isolated root absent",
+    "release_condition": "record result and confirm isolated backend exits",
+    "cleanup": "confirmed no reparse points or matching test processes, removed the exact isolated root and rescanned"
+  },
+  {
+    "path": ".cache/verify-codes-20261116",
+    "purpose": "isolated verification of dynamic trusted error codes and tool paths",
+    "version": "unreleased workspace after v0.1.0.dev2",
+    "task": "verify clarify-artifact-status-and-diagnostics",
+    "owner": "Agent",
+    "status": "removed; dedicated root absent and no matching test backend alive",
+    "release_condition": "verification recorded on 2026-11-16",
+    "cleanup": "verified and unlinked 31 in-root test links, removed exact root, rescanned"
   }
 ]
