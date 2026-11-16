@@ -8,6 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from jsonschema import Draft202012Validator
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from test_artifacts import video
@@ -89,6 +90,137 @@ async def submit(session, key="test"):
         request_key=key,
         request={"model": "seedance-2.0-mini-t2v", "prompt": "synthetic fox"},
     )
+
+
+async def test_agent_contract_discovery_and_safe_validation(surface):
+    async with protocol() as session:
+        tools = {tool.name: tool for tool in (await session.list_tools()).tools}
+        for name in ("preflight_video_task", "submit_video", "upscale_video"):
+            request = tools[name].input_schema["properties"]["request"]
+            assert set(("model", "prompt", "seconds", "images", "metadata")) <= set(
+                request["properties"]
+            )
+            audio = request["properties"]["metadata"]["properties"]["generate_audio"]
+            assert "default" not in audio
+            assert "default" not in request["properties"]["enhance_prompt"]
+            assert request["required"] == ["model"]
+            validator = Draft202012Validator(request)
+            media = {"type": "image_url", "image_url": {"url": {"local_path": "C:/x.png"}}}
+            valid = {
+                "model": "seedance-2.5-standard-multi",
+                "prompt": "x",
+                "metadata": {"content": [media]},
+            }
+            assert validator.is_valid(valid)
+            assert not validator.is_valid(
+                valid | {"metadata": {"content": [{"type": "image_url"}]}}
+            )
+
+        normal = {"model": "seedance-2.0-mini-t2v", "prompt": "private prompt"}
+        pre = await call(session, "preflight_video_task", request=normal)
+        assert pre["audio_source"] == "default"
+        assert pre["effective_summary"]["metadata"]["generate_audio"] is True
+        assert pre["prompt_optimization_authorization"] == pre["authorization"]
+        assert "local-mode acceptance does not" in pre["authorization_scope"]
+        assert pre["estimated_charge"] is None and "unknown" in pre["estimated_charge_status"]
+        assert (
+            await call(
+                session,
+                "preflight_video_task",
+                request=normal | {"metadata": {"generate_audio": False}},
+            )
+        )["audio_source"] == "explicit"
+        cases = [
+            (
+                {"model_id": "seedance-2.0-mini-t2v", "prompt": "private prompt"},
+                "model_id",
+                "model",
+            ),
+            (normal | {"ratio": "16:9"}, "ratio", "metadata.ratio"),
+            (normal | {"seconds": 8}, "seconds", None),
+            ({"prompt": "private prompt"}, "model", None),
+        ]
+        for request, field, suggestion in cases:
+            response = await call(session, "preflight_video_task", request=request)
+            diagnostic = response["diagnostic"]
+            assert diagnostic["stage"] == "validate"
+            assert diagnostic["code"] == response["error"]
+            assert diagnostic["details"]["field"] == field
+            if suggestion:
+                assert diagnostic["details"]["did_you_mean"] == suggestion
+            assert "private prompt" not in json.dumps(response)
+            assert (
+                await call(session, "get_diagnostic", diagnostic_id=diagnostic["diagnostic_id"])
+            ) == diagnostic
+
+        unsupported = await call(
+            session, "preflight_video_task", request=normal | {"model": "unknown-model"}
+        )
+        assert unsupported["error"] == "MODEL_NOT_SUPPORTED"
+        for request, field, expected in (
+            (normal | {"model": 7}, "model", "string"),
+            (normal | {"prompt": 7}, "prompt", "string"),
+            (normal | {"seconds": 8}, "seconds", "integer string; model limits apply"),
+            (normal | {"enhance_prompt": "yes"}, "enhance_prompt", "boolean"),
+        ):
+            error = await call(session, "preflight_video_task", request=request)
+            assert error["diagnostic"]["details"] == {"field": field, "expected": expected}
+            assert error["diagnostic"]["code"] == error["error"]
+        out_of_range = await call(
+            session, "preflight_video_task", request=normal | {"seconds": "999"}
+        )
+        assert out_of_range["error"] == "INVALID_DURATION"
+        policy = await call(session, "get_prompt_optimization_policy")
+        await call(
+            session,
+            "set_prompt_optimization_policy",
+            enabled=True,
+            expected_version=policy["version"],
+            confirmed=True,
+        )
+        shared = await call(session, "preflight_video_task", request=normal)
+        assert shared["authorization"]["enabled"] is True
+        disabled = await call(
+            session, "preflight_video_task", request=normal | {"enhance_prompt": False}
+        )
+        assert disabled["authorization"]["enabled"] is False
+        missing = await call(
+            session, "submit_video", request_key="invalid", request={"prompt": "private prompt"}
+        )
+        assert missing["error"] == "REQUIRED"
+        assert missing["diagnostic"]["details"]["field"] == "model"
+        secret = "Bearer-sensitive-token"
+        invalid = await call(
+            session,
+            "preflight_video_task",
+            request=normal | {"metadata": {secret: "https://example.invalid/?signature=secret"}},
+        )
+        assert secret not in json.dumps(invalid)
+        assert "signature" not in json.dumps(invalid)
+
+        final = await call(
+            session,
+            "preflight_video_task",
+            request={
+                "model": "seedance-2.5-standard-draft-to-video",
+                "metadata": {"draft_task_id": "task_example"},
+            },
+        )
+        assert final["ok"] and final["audio_source"] == "not_applicable"
+        upscale = await call(
+            session,
+            "preflight_video_task",
+            api_id="zhenzhen-upscaler",
+            request={
+                "model": "zhenzhen-upscaler",
+                "metadata": {
+                    "content": [
+                        {"type": "video_url", "video_url": {"url": "https://example.invalid/a.mp4"}}
+                    ]
+                },
+            },
+        )
+        assert upscale["ok"] and upscale["audio_source"] == "not_applicable"
 
 
 async def test_mcp_observed_and_legacy_raw_status(surface):

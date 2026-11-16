@@ -13,8 +13,7 @@ from pathlib import Path
 from .draft_evidence import local_draft_fact
 from .material_readers import material_readers
 from .materials import owned_path, receive
-from .models import get_model
-from .parameters import MediaFact, normalize
+from .parameters import MediaFact, normalize, request_model
 from .task_state import _load, _public, _version
 from .windows_security import protect_directory
 
@@ -274,7 +273,7 @@ class AdmissionService:
         if await self._existing(key):
             return await self._replay(key, request, api_id)
         prepared, inputs = local_inputs(request)
-        model = get_model(prepared.get("model"), api_id=api_id)
+        model = request_model(prepared, api_id=api_id)
         normalize(prepared, api_id=api_id)
         authorize(request, await self.get_preference(), once, model.kind)
         operation_id = uuid.uuid4().hex

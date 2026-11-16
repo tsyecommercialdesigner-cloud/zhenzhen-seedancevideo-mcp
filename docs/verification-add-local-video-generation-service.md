@@ -312,3 +312,9 @@ PR #14 的 Windows 完整检查成功；PR #15 验证并复用该运行，另行
 - 隔离回归覆盖缺失／损坏证据继续检索、README／清单变化、未允许文件变化、输入指纹被篡改及资产验证：`uv run --frozen pytest tests/test_ci_backfill.py tests/test_release_control.py tests/test_ci_reuse.py tests/test_ci_evidence.py tests/test_ci_docs.py tests/test_ci_tier.py tests/test_ci_manual_only.py -q --basetemp .cache/ci-reuse-final-20261116`，54 passed。初次单独运行发布测试时暴露导入路径问题，修复后独立运行 17 passed。全仓 Ruff 与格式检查通过，测试与证据临时目录已核对并清理。
 - 未触发远端 CI，未修改分支保护，未调用供应商或执行发布；GitHub 上实际修复行为待后续提交和 PR 检查。
 - 提交前复核：相同七组隔离测试在 `.cache/ci-reuse-review-20261116` 再次运行，54 passed；全仓 Ruff check、format 和 `git diff --check` 通过。复核目录及其测试符号链接已清理；该结果不代替后续 PR 的实际门禁。
+
+## 2026-11-16 默认模式使用说明修订
+
+- 对照配置加载、发行入口、租约和任务授权实现，补充默认 local 不执行生成、provider 启用与共享后端重启、状态解释、收费及旧任务处理；明确不支持 `remote`。同步成员手册、配置说明和工具手册。
+- `uv run --frozen pytest tests/test_configuration_docs.py tests/test_config.py -q`：46 passed；三个 Markdown 文档的解析、本地链接和代码围栏检查通过，手册五段 PowerShell 代码仅做语法解析，`git diff --check` 通过。
+- 本轮未修改实际用户或 Host 配置、未调用供应商或执行收费生成；未对用户现场环境做实际重启验收。已发布标签和资产不因本轮工作区文档修订而改变。

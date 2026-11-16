@@ -78,8 +78,12 @@ Windows 用户环境只读 `HKEY_CURRENT_USER\Environment`。Host 若仍携带�
 
 ## 发行入口执行保护
 
-默认local：不安装供应商调度，request/stream均阻断，但本地任务查询及已下载产物复制可用。即使环境中有真实密钥也不自动启用。启用时在安装目录.env显式设置`ZHENZHEN_SEEDANCE_EXECUTION_MODE=provider`，正常退出全部Host，确认旧后端退出后重启；不同显式模式的Host被配置冲突拒绝，不改变运行中后端。健康响应execution_mode显示实际模式，adapter_installed不代表供应商已探测可用。
+**默认 `local` 不能生成视频。** 它不安装供应商调度，供应商请求和下载网络请求均阻断；本地预检、任务查询和已有产物复制仍可用。`generation_execution=not_implemented` 表示当前未启用调度，并不表示发行包没有供应商适配器。即使已有真实密钥，`local` 也不会自动切换为 `provider`。
 
-provider模式正式接收新任务时，在同一事务写入供应商执行授权；这是提交授权的记录，不是额外确认。旧任务、local任务和缺授权记录均不补授权，启动时转待处理并保留事实/预算/占位，返回PROVIDER_EXECUTION_NOT_AUTHORIZED。重复request_key返回原任务，不能借重放开启执行。不要为旧的远端结果未知任务换key重提。需核对后另行制定迁移方案，本轮没有批量授权或迁移工具。上传、生成、查询和引用提取还会逐次核对持久授权。
+需要生成时，在实际安装目录 `.env` 填写有效的 `ZHENZHEN_SEEDANCE_API_KEY`，并将 `ZHENZHEN_SEEDANCE_EXECUTION_MODE` 的值改为 `provider`；只支持 `local` 和 `provider`，不支持 `remote`。同名字段不要重复；若改用环境变量，先删除或注释 `.env` 中对应字段，文件中的空值不会回退到环境变量。正常退出全部 Host，确认共享后端退出后重启；不同显式模式的 Host 会被配置冲突拒绝，不改变运行中的后端。完整操作见[成员手册](../MANUAL.md#启用供应商生成)。
+
+重启后用 `get_service_status({})` 检查 `execution_mode=provider`、`generation_execution=adapter_installed`，并在 Host 连接且调度正常时确认 `dispatch_allowed=true`。`provider=unverified` 与 `adapter_installed` 都不代表供应商连接已探测成功；网络、密钥和上游可用性仍须另行确认。预检不保证接收或生成成功，正式提交可能产生费用。
+
+provider模式正式接收新任务时，在同一事务写入供应商执行授权；这是提交授权的记录，不是额外确认。旧任务、local任务和缺授权记录均不补授权；启动时仍处于自动执行状态且未结束、未在本地取消的未授权任务转为待处理，保留事实、预算与占位，并标记 `PROVIDER_EXECUTION_NOT_AUTHORIZED`。重复request_key返回原任务，不能借重放开启执行。不要为旧的远端结果未知任务换key重提。需核对后另行制定迁移方案，当前没有批量授权或迁移工具。上传、生成、查询和引用提取还会逐次核对持久授权。
 
 模式与提示词优化偏好独立，provider不等于允许enhance_prompt；已授权任务在provider重启时按既有恢复/租约规则接续，local重启停止网络执行。内部合成注入仅供测试构造，发行配置不能指定任意适配器。
