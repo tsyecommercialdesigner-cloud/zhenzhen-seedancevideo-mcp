@@ -949,7 +949,7 @@
     "cleanup": "scoped links verified and unlinked; exact roots removed; no Host configuration touched"
   },
   {
-    "path": ".cache/ci-lightweight-20261116; .cache/ci-release-20261116; .cache/ci-package-check-20261116; .cache/ci-package-probe-20261116; .cache/ci-full-20261116",
+    "path": ".cache/ci-lightweight-20261116; .cache/ci-release-20261116; .cache/ci-package-check-20261116; .cache/ci-package-probe-20261116; .cache/ci-full-20261116; .cache/ci-main-evidence-20261116; .cache/ci-release-readonly-20261116; .cache/ci-release-readonly-proof-20261116",
     "purpose": "isolated CI gate tests and distribution installation check",
     "version": "unreleased lightweight CI workspace",
     "task": "lightweight CI and controlled release implementation",
