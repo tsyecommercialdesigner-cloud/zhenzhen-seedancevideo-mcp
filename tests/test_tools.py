@@ -29,8 +29,10 @@ from zhenzhen_seedance_video.tools import READ_ONLY, TOOL_NAMES, Tools
 
 
 @pytest.fixture
-async def surface(monkeypatch, fake_http):
+async def surface(monkeypatch, fake_http, request):
     monkeypatch.setenv("ZHENZHEN_SEEDANCE_API_KEY", "synthetic")
+    if getattr(request, "param", None) == "provider":
+        monkeypatch.delenv("ZHENZHEN_SEEDANCE_EXECUTION_MODE", raising=False)
     config = load_configuration()
     db = Database(config.state_dir)
     network = NetworkPolicy(config, _test_origins=[origin(fake_http.url)])
@@ -90,6 +92,213 @@ async def submit(session, key="test"):
         request_key=key,
         request={"model": "seedance-2.0-mini-t2v", "prompt": "synthetic fox"},
     )
+
+
+@pytest.mark.parametrize("surface", ["provider"], indirect=True)
+async def test_unverified_artifacts_are_advisory_across_clients(surface, tmp_path):
+    facade, adapter, http = surface
+    source = tmp_path / "input.png"
+    source.write_bytes(b"synthetic image")
+    async with protocol() as a, protocol() as b:
+        task = await call(
+            a,
+            "submit_video",
+            request_key="advisory",
+            request={
+                "model": "seedance-2.0-mini-i2v",
+                "prompt": "synthetic fox",
+                "images": [{"local_path": str(source)}],
+            },
+        )
+        tid = task["task_id"]
+        managed = facade.admission.root / (task["materials"][0]["material_id"] + ".input")
+        assert managed.exists()
+        await facade.scheduler.dispatch()
+        adapter.status = "completed"
+        await call(a, "refresh_task", task_id=tid)
+        aid = (
+            await facade.artifacts.register(tid, [{"url": http.url + "/video.mp4"}], complete=False)
+        )[0]
+        old = await call(a, "get_task", task_id=tid)
+        assert old["display_stage"] != "downloaded_unverified"
+        http.responses.append((200, {}, video()))
+        await facade.artifacts.download(aid)
+        current = await call(a, "get_task", task_id=tid)
+        assert current["display_stage"] == "downloaded_unverified"
+        found = await call(b, "find_task_by_request_key", request_key="advisory")
+        waited = await call(
+            b, "wait_task", task_id=tid, after_version=old["version"], timeout_seconds=0
+        )
+        assert found["version"] == waited["version"] == current["version"]
+        assert found["display_stage"] == waited["display_stage"] == current["display_stage"]
+        status = await call(b, "get_service_status")
+        assert status["execution_mode"] == "provider"
+        assert status["attention_count"] == 1 and status["actionable_attention_count"] == 0
+        assert (await call(b, "list_tasks", needs_attention=True))["items"]
+        assert not (await call(b, "list_tasks", actionable_only=True))["items"]
+        assert not (await call(b, "find_task_by_request_key", request_key="absent"))["accepted"]
+        item = (await call(b, "list_artifacts", task_id=tid))["items"][0]
+        copied = await call(
+            b,
+            "copy_artifact",
+            artifact_id=item["artifact_id"],
+            target_path=str(tmp_path / "copy.mp4"),
+        )
+        assert copied["copied"] and (tmp_path / "copy.mp4").read_bytes() == video()
+        await facade.cleanup.scan()
+        await facade.cleanup.due()
+        assert managed.exists() and source.exists()
+        assert len(adapter.posts) == 1
+
+
+async def test_business_diagnostics_are_safe_and_actionable(surface):
+    async with protocol() as session:
+        request = {
+            "model": "seedance-2.0-mini-t2v",
+            "prompt": "sensitive-prompt",
+            "enhance_prompt": True,
+        }
+        denied = await call(session, "preflight_video_task", request=request)
+        assert denied["error"] == denied["diagnostic"]["code"] == "PROMPT_AUTHORIZATION_REQUIRED"
+        assert denied["diagnostic"]["stage"] == "validate"
+        assert "allow_once" in denied["diagnostic"]["summary"]
+        policy = await call(session, "get_prompt_optimization_policy")
+        assert not policy["enabled"]
+        approved = await call(session, "preflight_video_task", request=request, allow_once=True)
+        assert approved["authorization"]["source"] == "single_allow"
+        assert not (await call(session, "get_prompt_optimization_policy"))["enabled"]
+        await call(
+            session,
+            "set_prompt_optimization_policy",
+            enabled=True,
+            expected_version=policy["version"],
+            confirmed=True,
+        )
+        shared = await call(session, "preflight_video_task", request=request)
+        assert shared["authorization"]["source"] == "always_allow"
+        missing = await call(session, "get_task", task_id="not-found")
+        assert missing["error"] == missing["diagnostic"]["code"] == "TASK_NOT_FOUND"
+        assert "find_task_by_request_key" in missing["diagnostic"]["allowed_actions"]
+        retrieved = await call(
+            session, "get_diagnostic", diagnostic_id=missing["diagnostic"]["diagnostic_id"]
+        )
+        assert retrieved == missing["diagnostic"]
+        missing_management = await call(
+            session, "cancel_task", task_id="not-found", expected_version=1
+        )
+        assert missing_management["diagnostic"]["code"] == "TASK_NOT_FOUND"
+        accepted = await submit(session, "cleanup-stage")
+        cleanup = await call(
+            session,
+            "retry_material_cleanup",
+            task_id=accepted["task_id"],
+            expected_version=accepted["version"],
+        )
+        assert (
+            cleanup["error"] == cleanup["diagnostic"]["code"] == "MATERIAL_CLEANUP_NOT_AUTHORIZED"
+        )
+        assert cleanup["diagnostic"]["stage"] == "cleanup"
+        assert (
+            await call(
+                session, "get_diagnostic", diagnostic_id=cleanup["diagnostic"]["diagnostic_id"]
+            )
+            == cleanup["diagnostic"]
+        )
+        for field in ("prompt", "seconds", "images"):
+            final = {
+                "model": "seedance-2.5-standard-draft-to-video",
+                "metadata": {"draft_task_id": "draft"},
+                field: "sensitive-prompt",
+            }
+            result = await call(session, "preflight_video_task", request=final)
+            assert result["error"] == "FIELD_NOT_APPLICABLE"
+            assert result["diagnostic"]["details"]["field"] == field
+            assert "sensitive-prompt" not in json.dumps(result)
+        multiple = await call(
+            session,
+            "preflight_video_task",
+            request={
+                "model": "seedance-2.5-standard-draft-to-video",
+                "metadata": {"draft_task_id": "draft"},
+                "seconds": "4",
+                "images": [],
+                "prompt": "sensitive-prompt",
+            },
+        )
+        assert multiple["error"] == "FIELD_NOT_APPLICABLE"
+        assert multiple["diagnostic"]["details"]["field"] == "prompt"
+        unknown = await call(
+            session,
+            "preflight_video_task",
+            request={
+                "model": "seedance-2.5-standard-draft-to-video",
+                "metadata": {"draft_task_id": "draft"},
+                "sensitive-key": "sensitive-value",
+            },
+        )
+        assert unknown["error"] == "UNKNOWN_OR_INAPPLICABLE_FIELD"
+        assert "sensitive-key" not in json.dumps(unknown)
+        assert "sensitive-value" not in json.dumps(unknown)
+
+
+async def test_storage_constraint_through_mcp_and_diagnostic(surface, monkeypatch):
+    facade, _, _ = surface
+    await facade.db.execute(lambda c: c.execute("CREATE TABLE code_sentinel (value TEXT UNIQUE)"))
+    await facade.db.execute(lambda c: c.execute("INSERT INTO code_sentinel VALUES ('same')"))
+
+    async def duplicate(task_id):
+        return await facade.db.execute(
+            lambda c: c.execute("INSERT INTO code_sentinel VALUES ('same')")
+        )
+
+    monkeypatch.setattr(facade.queries, "get", duplicate)
+    async with protocol() as session:
+        result = await call(session, "get_task", task_id="synthetic")
+        diagnostic = result["diagnostic"]
+        assert result["error"] == diagnostic["code"] == "STORAGE_CONSTRAINT"
+        assert diagnostic["stage"] == "storage"
+        assert (
+            await call(session, "get_diagnostic", diagnostic_id=diagnostic["diagnostic_id"])
+            == diagnostic
+        )
+
+
+async def test_unapproved_provider_guard_through_mcp_handler(surface, monkeypatch):
+    from zhenzhen_seedance_video.production import require_authorized
+
+    facade, adapter, _ = surface
+    async with protocol() as session:
+        task = await submit(session, "unapproved-code")
+
+        async def guarded_get(task_id):
+            await require_authorized(facade.db, task_id)
+
+        monkeypatch.setattr(facade.queries, "get", guarded_get)
+        result = await call(session, "get_task", task_id=task["task_id"])
+        diagnostic = result["diagnostic"]
+        assert result["error"] == diagnostic["code"] == "PROVIDER_EXECUTION_NOT_AUTHORIZED"
+        assert (
+            await call(session, "get_diagnostic", diagnostic_id=diagnostic["diagnostic_id"])
+            == diagnostic
+        )
+        assert not adapter.posts
+
+
+async def test_server_name_over_stdio(surface):
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if key.startswith("ZHENZHEN_SEEDANCE_") or key in {"LOCALAPPDATA", "PYTHONPATH"}
+    }
+    params = StdioServerParameters(
+        command=sys.executable, args=["-m", "zhenzhen_seedance_video", "stdio"], env=environment
+    )
+    async with stdio_client(params) as streams:
+        async with ClientSession(*streams) as session:
+            result = await session.initialize()
+            assert result.server_info.name == "zhenzhen-seedancevideo-mcp"
+            caps = await call(session, "get_capabilities")
+            assert caps["apis"][0]["api_id"] == "seedance-video"
 
 
 async def test_agent_contract_discovery_and_safe_validation(surface):
@@ -418,9 +627,16 @@ async def test_two_clients_pagination_wait_and_exception_visibility(surface):
             )
 
         await facade.db.execute(change)
+        actionable = await call(a, "list_tasks", actionable_only=True, limit=1)
+        assert actionable["items"][0]["task_id"] == identifier
+        assert (await call(a, "get_service_status"))["actionable_attention_count"] == 1
         for session in (a, b):
             assert len((await call(session, "list_tasks", needs_attention=True))["items"]) == 1
         first = await call(a, "list_tasks", limit=1)
+        wrong_cursor = await call(
+            b, "list_tasks", limit=1, cursor=first["next_cursor"], actionable_only=True
+        )
+        assert wrong_cursor["error"] == "INVALID_CURSOR"
         second = await call(b, "list_tasks", limit=1, cursor=first["next_cursor"])
         assert second["items"][0]["task_id"] == tasks[1]["task_id"]
         invalid = await call(
@@ -444,6 +660,25 @@ async def test_two_clients_pagination_wait_and_exception_visibility(surface):
             )
         )
         assert not (await call(b, "list_tasks", needs_attention=True))["items"]
+        for item in tasks[1:]:
+            await facade.db.execute(
+                lambda c, task_id=item["task_id"]: _change(
+                    c,
+                    _load(c, task_id),
+                    {"attention": '["QUERY_RETRIES_EXHAUSTED","FUTURE_REASON"]'},
+                    kind="test",
+                    now="later",
+                )
+            )
+        page = await call(a, "list_tasks", actionable_only=True, limit=1)
+        assert page["next_cursor"]
+        following = await call(
+            b, "list_tasks", actionable_only=True, limit=1, cursor=page["next_cursor"]
+        )
+        assert {page["items"][0]["task_id"], following["items"][0]["task_id"]} == {
+            item["task_id"] for item in tasks[1:]
+        }
+        assert (await call(b, "get_service_status"))["actionable_attention_count"] == 2
         invalid = await call(
             a, "wait_task", task_id=identifier, after_version=2, timeout_seconds=31
         )
@@ -469,6 +704,14 @@ async def test_local_queries_provider_gate_and_sanitized_errors(surface, monkeyp
         result = await call(session, "get_task", task_id=task["task_id"])
         assert result["error"] == "INTERNAL_ERROR"
         assert not any(word in json.dumps(result) for word in ("Traceback", "private", "API_KEY"))
+
+        async def fail_uppercase(task_id):
+            raise RuntimeError("SYNTHETIC_SECRET_TOKEN")
+
+        monkeypatch.setattr(facade.queries, "get", fail_uppercase)
+        result = await call(session, "get_task", task_id=task["task_id"])
+        assert result["error"] == result["diagnostic"]["code"] == "INTERNAL_ERROR"
+        assert "SYNTHETIC_SECRET_TOKEN" not in json.dumps(result)
 
 
 async def test_protocol_cancellation_and_committed_management(surface, monkeypatch):

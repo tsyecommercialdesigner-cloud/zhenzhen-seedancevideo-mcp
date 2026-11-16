@@ -10,6 +10,7 @@ from zhenzhen_seedance_video.provider import Capabilities, ProviderFailure
 from zhenzhen_seedance_video.provider_response import Observation
 from zhenzhen_seedance_video.scheduler import Scheduler
 from zhenzhen_seedance_video.storage import Database
+from zhenzhen_seedance_video.task_state import StateError
 
 
 class SyntheticAdapter:
@@ -94,6 +95,27 @@ async def submit(admission, key, upscale=False):
             api_id="zhenzhen-upscaler",
         )
     return await admission.submit(key, {"model": "seedance-2.0-mini-t2v", "prompt": "synthetic"})
+
+
+async def test_auto_poll_tolerates_lease_pause_race_without_hiding_other_errors(setup, monkeypatch):
+    engine, admission, adapter, _, _ = setup
+    task = await submit(admission, "lease-race")
+    await engine.dispatch()
+
+    async def paused(task_id):
+        assert task_id == task["task_id"]
+        raise StateError("NETWORK_WORK_PAUSED")
+
+    monkeypatch.setattr(engine, "query", paused)
+    await engine.poll_due()
+    assert not adapter.queries
+
+    async def unexpected(task_id):
+        raise StateError("QUERY_IDENTITY_UNAVAILABLE")
+
+    monkeypatch.setattr(engine, "query", unexpected)
+    with pytest.raises(StateError, match="QUERY_IDENTITY_UNAVAILABLE"):
+        await engine.poll_due()
 
 
 async def test_fifo_protection_global_capacity_and_host_gate(setup):

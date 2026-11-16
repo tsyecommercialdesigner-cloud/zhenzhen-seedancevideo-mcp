@@ -98,13 +98,29 @@ async def test_clean_source_install_stdio_discovery_and_external_state(tmp_path)
     bootstrap.mkdir()
     (bootstrap / "sitecustomize.py").write_text(
         "from zhenzhen_seedance_video import config\n"
-        "config._read_user_environment=lambda excluded: {}\n",
+        "config._read_user_environment=lambda excluded: {}\n"
+        "import socket\n"
+        "original_connect=socket.socket.connect\n"
+        "def isolated_connect(sock, address):\n"
+        "    if isinstance(address, tuple) and address[0] not in ('127.0.0.1', '::1'):\n"
+        "        raise OSError('external network disabled in test')\n"
+        "    return original_connect(sock, address)\n"
+        "socket.socket.connect=isolated_connect\n"
+        "original_resolve=socket.getaddrinfo\n"
+        "def isolated_resolve(host, port, *args, **kwargs):\n"
+        "    if host not in ('127.0.0.1', '::1', 'localhost'):\n"
+        "        raise OSError('external network disabled in test')\n"
+        "    return original_resolve(host, port, *args, **kwargs)\n"
+        "socket.getaddrinfo=isolated_resolve\n",
         encoding="utf-8",
     )
     environment["PYTHONPATH"] = str(bootstrap)
     environment["ZHENZHEN_SEEDANCE_API_KEY"] = "wrong-process-value"
     (project / ".env").write_text(
-        "ZHENZHEN_SEEDANCE_API_KEY=synthetic-file-key\nZHENZHEN_SEEDANCE_SHUTDOWN_GRACE_SECONDS=1\nZHENZHEN_SEEDANCE_SHUTDOWN_DRAIN_SECONDS=1\n",
+        "ZHENZHEN_SEEDANCE_API_KEY=synthetic-file-key\n"
+        "ZHENZHEN_SEEDANCE_EXECUTION_MODE=local\n"
+        "ZHENZHEN_SEEDANCE_SHUTDOWN_GRACE_SECONDS=1\n"
+        "ZHENZHEN_SEEDANCE_SHUTDOWN_DRAIN_SECONDS=1\n",
         encoding="utf-8",
     )
     root = tmp_path / "local-app-data/ZhenzhenSeedanceVideo"

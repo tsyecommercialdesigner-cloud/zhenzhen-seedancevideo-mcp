@@ -149,8 +149,9 @@ def normalize(request, *, api_id="seedance-video", media_facts=None, draft_fact=
     if "enhance_prompt" in payload:
         _boolean(payload["enhance_prompt"], "enhance_prompt")
     if model.kind in ("draft-to-video", "upscale"):
-        if any(key in payload for key in ("prompt", "seconds", "images")):
-            raise ParameterError("FIELD_NOT_APPLICABLE", "request")
+        for key in ("prompt", "seconds", "images"):
+            if key in payload:
+                raise ParameterError("FIELD_NOT_APPLICABLE", key)
         if payload.pop("enhance_prompt", False):
             raise ParameterError("FIELD_NOT_APPLICABLE", "enhance_prompt")
     if model.kind == "draft-to-video":

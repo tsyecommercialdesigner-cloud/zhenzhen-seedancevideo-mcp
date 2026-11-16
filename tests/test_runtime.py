@@ -141,7 +141,8 @@ async def test_sdk_v2_stdio_frontend_connects_shared_backend(runtime_environment
                     "find_task_by_request_key", {"request_key": "stdio-intake"}
                 )
                 assert found.pop("stale") is False
-                assert found == accepted
+                assert all(found[key] == value for key, value in accepted.items())
+                assert found["display_stage"] == accepted["stage"]
                 source = runtime_environment.parent / "synthetic-input.png"
                 source.write_bytes(b"synthetic-local-material")
                 received = await session.call_tool(
@@ -178,7 +179,8 @@ async def test_sdk_v2_stdio_frontend_connects_shared_backend(runtime_environment
         assert restarted.instance_id != backend.instance_id
         found = await restarted.call("find_task_by_request_key", {"request_key": "stdio-intake"})
         assert found.pop("stale") is False
-        assert found == accepted
+        assert all(found[key] == value for key, value in accepted.items())
+        assert found["display_stage"] == accepted["stage"]
         assert (await restarted.call("get_prompt_optimization_policy"))["enabled"] is True
         record = json.loads((runtime_environment / "discovery.json").read_text())
     finally:
