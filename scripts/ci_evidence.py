@@ -75,6 +75,12 @@ def current_evidence():
 
 def main():
     evidence = current_evidence()
+    reused = os.environ.get("REUSE_RUN", "")
+    if reused:
+        if not reused.isdecimal():
+            raise RuntimeError("Invalid reused run identity")
+        evidence["scope"] = "candidate-build-reused-checks"
+        evidence["reused_run_id"] = reused
     Path(sys.argv[1]).write_text(
         json.dumps(evidence, sort_keys=True, indent=2) + "\n", encoding="utf-8"
     )

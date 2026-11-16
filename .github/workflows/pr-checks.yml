@@ -10,6 +10,10 @@ permissions:
   actions: read
   pull-requests: read
 
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   windows:
     runs-on: windows-latest
@@ -63,8 +67,60 @@ jobs:
             }
           }
           if ($manualOnly) {
+            # Prose-only edits can be reviewed by Agent and human; changes to
+            # fenced examples or headings cannot use the backfill exception.
+            $patch = @(git diff --unified=0 "$env:BASE_SHA...$env:HEAD_SHA" -- MANUAL.md)
+            if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect manual diff' }
+            $changedLines = @($patch | Where-Object { $_ -match '^[+-]' -and $_ -notmatch '^(---|\+\+\+)' })
+            $before = @(git show "${env:BASE_SHA}:MANUAL.md")
+            if ($LASTEXITCODE -ne 0) { throw 'Cannot read base manual' }
+            $after = @(git show 'HEAD:MANUAL.md')
+            if ($LASTEXITCODE -ne 0) { throw 'Cannot read candidate manual' }
+            function Is-ManualProse($lines, $index) {
+              if ($index -lt 1 -or $index -gt $lines.Count) { return $false }
+              $fence = $null
+              for ($i = 0; $i -lt $index; $i++) {
+                if ($lines[$i] -match '^\s{0,3}(`{3,}|~{3,})') {
+                  $mark = $Matches[1]
+                  if ($null -eq $fence) { $fence = $mark }
+                  elseif ($mark[0] -eq $fence[0] -and $mark.Length -ge $fence.Length) { $fence = $null }
+                  if ($i -eq $index - 1) { return $false }
+                }
+              }
+              return $null -eq $fence -and $lines[$index - 1] -notmatch '^\s{0,3}#{1,6}(\s|$)'
+            }
+            $oldLine = 0; $newLine = 0
+            foreach ($line in $patch) {
+              if ($line -match '^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@') {
+                $oldLine = [int]$Matches[1]; $newLine = [int]$Matches[2]
+              } elseif ($line -match '^-(?!--)') {
+                if (-not (Is-ManualProse $before $oldLine)) { $manualOnly = $false }
+                $oldLine++
+              } elseif ($line -match '^\+(?!\+\+)') {
+                if (-not (Is-ManualProse $after $newLine)) { $manualOnly = $false }
+                $newLine++
+              }
+            }
+            if ($changedLines.Count -eq 0) { $manualOnly = $false }
+          }
+          if ($manualOnly) {
+            git diff --check "$env:BASE_SHA...$env:HEAD_SHA" -- MANUAL.md
+            if ($LASTEXITCODE -ne 0) { throw 'Manual diff formatting failed' }
+            if ($changedLines | Where-Object { $_ -match '^\+.*(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9_-]{24,}|[?&](X-Tos-Signature|X-Amz-Signature)=)' }) {
+              throw 'Secret pattern detected in manual changes'
+            }
+            foreach ($line in $changedLines | Where-Object { $_.StartsWith('+') }) {
+              foreach ($link in [regex]::Matches($line, '\]\(([^\s)]+)\)')) {
+                $target = $link.Groups[1].Value
+                if ($target -match '^(https?://|mailto:|#)') { continue }
+                $path = [Uri]::UnescapeDataString(($target -split '[#?]', 2)[0])
+                if (-not $path -or [IO.Path]::IsPathRooted($path) -or $path -match '(^|[/\\])\.\.([/\\]|$)' -or -not (Test-Path -LiteralPath $path)) {
+                  throw 'Manual local link is invalid or outside repository'
+                }
+              }
+            }
             'manual_only=true' >> $env:GITHUB_OUTPUT
-            "### CI scope`nManual-only published backfill: no tests, build, Release API validation or artifact reuse. Agent and human must review MANUAL.md; this is not full release acceptance." >> $env:GITHUB_STEP_SUMMARY
+            "### CI scope`nManual-only prose changes: diff whitespace, changed local links and common secret patterns checked; no tests, build, Release API validation or artifact reuse. Agent and human must confirm these are published facts and review MANUAL.md; this is not full release acceptance." >> $env:GITHUB_STEP_SUMMARY
           } else {
             'manual_only=false' >> $env:GITHUB_OUTPUT
           }
@@ -73,14 +129,69 @@ jobs:
       - name: Install locked environment
         if: steps.manual.outputs.manual_only != 'true'
         run: uv sync --frozen
+      - name: Check documentation-only development changes
+        id: docs
+        if: steps.manual.outputs.manual_only != 'true'
+        shell: pwsh
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if ($env:BASE_REF -ne 'dev' -or $env:BASE_SHA -notmatch '^[0-9a-f]{40}$') {
+            'docs=false' >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+          git diff --quiet $env:BASE_SHA HEAD -- .github/workflows scripts pyproject.toml uv.lock .python-version
+          if ($LASTEXITCODE -ne 0) {
+            'docs=false' >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+          uv run --frozen python scripts/ci_docs.py
+          if ($LASTEXITCODE -ne 0) { throw 'Documentation check failed' }
+      - name: Check isolated test-only development changes
+        id: tests_only
+        if: steps.manual.outputs.manual_only != 'true' && steps.docs.outputs.docs != 'true'
+        shell: pwsh
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if ($env:BASE_REF -ne 'dev' -or $env:BASE_SHA -notmatch '^[0-9a-f]{40}$') {
+            'tests_only=false' >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+          $changed = @(git diff --name-status --no-renames $env:BASE_SHA HEAD)
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot enumerate test changes' }
+          if ($changed.Count -eq 0 -or @($changed | Where-Object { $_ -notmatch '^M\ttests/test_[a-z0-9_]+\.py$' }).Count -gt 0) {
+            'tests_only=false' >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+          git diff --check $env:BASE_SHA HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Test diff formatting failed' }
+          $patch = @(git diff --no-color $env:BASE_SHA HEAD)
+          if ($patch | Where-Object { $_ -match '^\+.*(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9_-]{24,}|[?&](X-Tos-Signature|X-Amz-Signature)=)' }) {
+            throw 'Secret pattern detected in test changes'
+          }
+          uv run --frozen ruff check .
+          if ($LASTEXITCODE -ne 0) { throw 'Ruff check failed' }
+          uv run --frozen ruff format --check .
+          if ($LASTEXITCODE -ne 0) { throw 'Ruff format check failed' }
+          $files = @($changed | ForEach-Object { ($_ -split "`t", 2)[1] })
+          uv run --frozen pytest -q --basetemp "$env:RUNNER_TEMP\sd-test-only" @files
+          if ($LASTEXITCODE -ne 0) { throw 'Changed tests failed' }
+          'tests_only=true' >> $env:GITHUB_OUTPUT
+          '### CI scope: full Ruff checks and modified test files; no build or complete test suite' >> $env:GITHUB_STEP_SUMMARY
       - name: Classify and verify trusted evidence
         id: gate
-        if: steps.manual.outputs.manual_only != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.docs.outputs.docs != 'true' && steps.tests_only.outputs.tests_only != 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
           # The verifier cannot authorize its own changes or workflow changes.
           if (-not $env:BASE_SHA -or -not $env:HEAD_SHA) {
@@ -101,6 +212,21 @@ jobs:
           $changed = @(git diff --name-only --no-renames $env:BASE_SHA $env:HEAD_SHA)
           if ($LASTEXITCODE -ne 0) { throw 'Unable to enumerate diff' }
           if ($changed.Count -eq 0 -or @($changed | Where-Object { $_ -cnotin $allowed }).Count -gt 0) {
+            # The verifier must be from the base or the exact integrated dev head.
+            git diff --quiet $env:BASE_SHA HEAD -- .github/workflows scripts pyproject.toml uv.lock .python-version
+            $trustedVerifier = $LASTEXITCODE -eq 0
+            if (-not $trustedVerifier -and $env:BASE_REF -eq 'main' -and $env:HEAD_REF -eq 'dev' -and $env:HEAD_REPO -ceq $env:GITHUB_REPOSITORY) {
+              $devHead = git rev-parse refs/remotes/origin/dev
+              if ($LASTEXITCODE -eq 0 -and $devHead -ceq $env:HEAD_SHA) {
+                git diff --quiet refs/remotes/origin/dev HEAD -- .github/workflows scripts pyproject.toml uv.lock .python-version
+                $trustedVerifier = $LASTEXITCODE -eq 0
+              }
+            }
+            if ($env:BASE_REF -eq 'main' -and $trustedVerifier) {
+              uv run --frozen python scripts/ci_reuse.py
+              if ($LASTEXITCODE -ne 0) { throw 'Candidate evidence check failed' }
+              exit 0
+            }
             'reuse=false' >> $env:GITHUB_OUTPUT
             "### CI scope`nFull verification: non-fact input changed." >> $env:GITHUB_STEP_SUMMARY
             exit 0
@@ -114,7 +240,7 @@ jobs:
           uv run --frozen python scripts/ci_backfill.py
           if ($LASTEXITCODE -ne 0) { throw 'CI gate failed' }
       - name: Check lint and formatting
-        if: steps.manual.outputs.manual_only != 'true' && steps.gate.outputs.reuse != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.docs.outputs.docs != 'true' && steps.tests_only.outputs.tests_only != 'true' && steps.gate.outputs.reuse != 'true'
         shell: pwsh
         run: |
           uv run --frozen ruff check .
@@ -122,24 +248,33 @@ jobs:
           uv run --frozen ruff format --check .
           if ($LASTEXITCODE -ne 0) { throw 'Ruff format check failed' }
       - name: Run isolated tests
-        if: steps.manual.outputs.manual_only != 'true' && steps.gate.outputs.reuse != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.docs.outputs.docs != 'true' && steps.tests_only.outputs.tests_only != 'true' && steps.gate.outputs.reuse != 'true'
         shell: pwsh
         run: uv run --frozen pytest -q --basetemp "$env:RUNNER_TEMP\sd-tests"
       - name: Build packages
-        if: steps.manual.outputs.manual_only != 'true' && steps.gate.outputs.reuse != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.docs.outputs.docs != 'true' && steps.tests_only.outputs.tests_only != 'true' && (steps.gate.outputs.reuse != 'true' || github.base_ref == 'main')
         run: uv build --offline
       - name: Record candidate identity and checksums
-        if: steps.manual.outputs.manual_only != 'true' && steps.gate.outputs.reuse != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.docs.outputs.docs != 'true' && steps.tests_only.outputs.tests_only != 'true' && (steps.gate.outputs.reuse != 'true' || github.base_ref == 'main')
         shell: pwsh
+        env:
+          REUSE_RUN: ${{ steps.gate.outputs.reuse_run }}
         run: |
           git rev-parse HEAD | Set-Content dist/SOURCE_COMMIT.txt -Encoding ascii
           git rev-parse 'HEAD^{tree}' | Set-Content dist/SOURCE_TREE.txt -Encoding ascii
           Get-FileHash dist/*.whl,dist/*.tar.gz -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $([IO.Path]::GetFileName($_.Path))" } | Set-Content dist/SHA256SUMS.txt -Encoding ascii
-          uv run --frozen python scripts/ci_evidence.py dist/VERIFICATION_EVIDENCE.json
-          if ($LASTEXITCODE -ne 0) { throw 'Verification evidence generation failed' }
-          '### CI scope: full Windows lint, format, tests and build' >> $env:GITHUB_STEP_SUMMARY
+          if ('${{ steps.gate.outputs.reuse }}' -ne 'true') {
+            uv run --frozen python scripts/ci_evidence.py dist/VERIFICATION_EVIDENCE.json
+            if ($LASTEXITCODE -ne 0) { throw 'Verification evidence generation failed' }
+            '### CI scope: full Windows lint, format, tests and build' >> $env:GITHUB_STEP_SUMMARY
+          } else {
+            if ('${{ steps.gate.outputs.reuse_run }}' -notmatch '^[0-9]+$') { throw 'Missing trusted run identity' }
+            uv run --frozen python scripts/ci_evidence.py dist/CANDIDATE_EVIDENCE.json
+            if ($LASTEXITCODE -ne 0) { throw 'Candidate evidence generation failed' }
+            '### CI scope: candidate build; earlier checks reused as described above' >> $env:GITHUB_STEP_SUMMARY
+          }
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: steps.manual.outputs.manual_only != 'true' && steps.gate.outputs.reuse != 'true'
+        if: steps.manual.outputs.manual_only != 'true' && steps.docs.outputs.docs != 'true' && steps.tests_only.outputs.tests_only != 'true' && (steps.gate.outputs.reuse != 'true' || github.base_ref == 'main')
         with:
           name: windows-candidate-${{ github.run_id }}
           path: dist/*

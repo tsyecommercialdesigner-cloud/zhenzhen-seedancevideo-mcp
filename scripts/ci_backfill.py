@@ -114,8 +114,8 @@ def classify(base, head):
         return False
     for name in names:
         if name == "MANUAL.md":
-            # Explicit project exception: Agent and human review manual changes.
-            continue
+            # Only the separate single-manual precheck can grant this exception.
+            return False
         old, new = git("show", f"{base}:{name}"), git("show", f"{head}:{name}")
         if SECRET.search(new):
             return False
@@ -298,7 +298,7 @@ def evidence_matches(evidence, expected, run, pull, base_is_descendant):
     )
 
 
-def trusted_run(repository, base, expected):
+def trusted_run(repository, base, expected, exact_tree=None):
     """Locate a retained successful run for a merged same-repository PR."""
     response = gh_json(
         f"repos/{repository}/actions/workflows/pr-checks.yml/runs?status=success&per_page=100"
@@ -337,6 +337,8 @@ def trusted_run(repository, base, expected):
                 capture_output=True,
             )
             evidence = json.loads((Path(tmp) / "VERIFICATION_EVIDENCE.json").read_text())
+        if exact_tree is not None and evidence.get("source_tree") != exact_tree:
+            continue
         source = gh_json(f"repos/{repository}/git/commits/{evidence['source_commit']}")
         if source.get("tree", {}).get("sha") != evidence.get("source_tree"):
             continue
@@ -370,6 +372,7 @@ def trusted_run(repository, base, expected):
 def main():
     """Report reuse only after all checks; all failures conservatively select full."""
     result = "false"
+    run_id = None
     reason = "No eligible, verified release backfill"
     try:
         base = os.environ["BASE_SHA"]
@@ -399,6 +402,8 @@ def main():
         reason = "Evidence unavailable, invalid, or change outside supported fact-only scope"
     with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
         output.write(f"reuse={result}\n")
+        if result == "true":
+            output.write(f"reuse_run={run_id}\n")
     with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a", encoding="utf-8") as summary:
         summary.write(
             f"### CI scope\n{reason}\n"
