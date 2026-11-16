@@ -11,21 +11,43 @@ from pathlib import Path
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-from .config import load_configuration
 from .ownership import OwnershipError, ProcessIdentity, confirm_exited
 
 
 async def _probe(root: Path):
-    os.environ["LOCALAPPDATA"] = str(root)
-    config = load_configuration()
-    if config.execution_mode != "local":
-        raise RuntimeError("PROBE_REQUIRES_LOCAL_MODE")
+    install = root / "installation"
+    install.mkdir()
+    (install / ".env").write_text(
+        "ZHENZHEN_SEEDANCE_API_KEY=probe-placeholder\n"
+        "ZHENZHEN_SEEDANCE_EXECUTION_MODE=local\n"
+        "ZHENZHEN_SEEDANCE_SHUTDOWN_GRACE_SECONDS=1\n"
+        "ZHENZHEN_SEEDANCE_SHUTDOWN_DRAIN_SECONDS=1\n",
+        encoding="utf-8",
+    )
+    # sitecustomize is inherited by the backend too; the frontend alone cannot
+    # override its child process's installation-root resolution.
+    (install / "sitecustomize.py").write_text(
+        "import os\nfrom pathlib import Path\n"
+        "from zhenzhen_seedance_video import config\n"
+        "config.installation_root=lambda: Path(os.environ['SEEDANCE_PROBE_CONFIG_ROOT'])\n"
+        "config._read_user_environment=lambda excluded: {}\n",
+        encoding="utf-8",
+    )
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.upper().startswith("ZHENZHEN_SEEDANCE_")
+        and key.upper() not in {"API_KEY", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY"}
+    }
+    environment["LOCALAPPDATA"] = str(root)
+    environment["SEEDANCE_PROBE_CONFIG_ROOT"] = str(install)
+    environment["PYTHONPATH"] = str(install)
     params = StdioServerParameters(
         command=sys.executable,
         args=["-m", "zhenzhen_seedance_video", "stdio"],
-        env=dict(os.environ),
+        env=environment,
     )
-    discovery = config.root / "runtime" / "discovery.json"
+    discovery = root / "ZhenzhenSeedanceVideo" / "runtime" / "discovery.json"
     identity = None
     try:
         with open(os.devnull, "w", encoding="utf-8") as error_sink:  # noqa: ASYNC230

@@ -43,6 +43,19 @@ async def test_main_video_download_copy_and_unknown_collection(setup, tmp_path):
     snapshot = await Queries(engine.db, engine.config).get(tid)
     assert snapshot["artifact_set_status"] == "unverified"
     assert snapshot["delivery"] == "partial" and snapshot["remote_state"] == "succeeded"
+    assert snapshot["display_stage"] == "downloaded_unverified"
+    assert snapshot["advisory_reasons"] == ["ARTIFACT_SET_UNVERIFIED"]
+    assert snapshot["actionable_reasons"] == []
+    assert "retry_task_download" not in snapshot["allowed_actions"]
+    assert {"verify_artifact", "copy_artifact"} <= set(snapshot["allowed_actions"])
+    query = Queries(engine.db, engine.config)
+    found = await query.find("request")
+    assert found["display_stage"] == snapshot["display_stage"]
+    assert (await query.wait(tid, snapshot["version"], 0))["display_stage"] == snapshot[
+        "display_stage"
+    ]
+    assert (await query.list(needs_attention=True))["items"][0]["task_id"] == tid
+    assert (await query.list(actionable_only=True))["items"] == []
     assert snapshot["cleanup_state"] != "pending" and snapshot["stage"] != "settled"
     assert "ARTIFACT_SET_UNVERIFIED" in snapshot["attention"]
     assert snapshot["charge"]["state"] == "not_returned"
@@ -88,6 +101,10 @@ async def test_unknown_manifest_survives_database_reopen(setup):
     responses.append((200, video()))
     await engine.deliver_due()
     original = (await delivery.list(tid))["items"][0]
+    previous = await Queries(engine.db, engine.config).get(tid)
+    attempts_before = await engine.db.execute(
+        lambda c: c.execute("SELECT count(*) FROM attempts").fetchone()[0], write=False
+    )
     await engine.close()
     await engine.db.close()
     reopened = Database(engine.config.state_dir)
@@ -97,6 +114,15 @@ async def test_unknown_manifest_survives_database_reopen(setup):
         await restored.due()
         snapshot = await Queries(reopened, engine.config).get(tid)
         assert snapshot["artifact_set_status"] == "unverified" and snapshot["delivery"] == "partial"
+        assert snapshot["display_stage"] == "downloaded_unverified"
+        assert snapshot["version"] == previous["version"]
+        assert (await Queries(reopened, engine.config).get(tid))["version"] == previous["version"]
+        assert (
+            await reopened.execute(
+                lambda c: c.execute("SELECT count(*) FROM attempts").fetchone()[0], write=False
+            )
+            == attempts_before
+        )
         assert (await restored.list(tid))["items"][0]["sha256"] == original["sha256"]
         assert len(requests) == 3
         assert not await reopened.execute(
@@ -105,6 +131,77 @@ async def test_unknown_manifest_survives_database_reopen(setup):
     finally:
         await restored.close()
         await reopened.close()
+
+
+async def test_mixed_artifact_failure_and_attention_classification(setup):
+    engine, _, responses, _, tid, _ = setup
+    delivery, _ = await connect_delivery(setup)
+    responses.append((200, video()))
+    await engine.deliver_due()
+    query = Queries(engine.db, engine.config)
+    before = await query.get(tid)
+    assert before["display_stage"] == "downloaded_unverified"
+    await engine.db.execute(
+        lambda c: c.execute(
+            "UPDATE tasks SET attention=? WHERE task_id=?",
+            (json.dumps(["ARTIFACT_SET_UNVERIFIED", "CLEANUP_FAILED", "FUTURE_REASON"]), tid),
+        )
+    )
+    mixed = await query.get(tid)
+    assert mixed["advisory_reasons"] == ["ARTIFACT_SET_UNVERIFIED"]
+    assert mixed["actionable_reasons"] == ["CLEANUP_FAILED", "FUTURE_REASON"]
+    assert len((await query.list(actionable_only=True))["items"]) == 1
+    await engine.db.execute(
+        lambda c: c.execute("UPDATE tasks SET auto_mode='abandoned' WHERE task_id=?", (tid,))
+    )
+    abandoned = await query.get(tid)
+    assert abandoned["auto_mode"] == "abandoned"
+    assert abandoned["display_stage"] == "downloaded_unverified"
+    assert "FUTURE_REASON" in abandoned["actionable_reasons"]
+    await engine.db.execute(
+        lambda c: c.execute("UPDATE artifacts SET state='missing' WHERE task_id=?", (tid,))
+    )
+    missing = await query.get(tid)
+    assert missing["display_stage"] == missing["stage"]
+    assert "ARTIFACT_SET_UNVERIFIED" in missing["actionable_reasons"]
+    assert "retry_task_download" in missing["allowed_actions"]
+    await engine.db.execute(
+        lambda c: c.execute("UPDATE artifacts SET state='changed' WHERE task_id=?", (tid,))
+    )
+    changed = await query.get(tid)
+    assert changed["display_stage"] == changed["stage"]
+    assert "retry_task_download" in changed["allowed_actions"]
+
+
+async def test_partial_multi_artifact_and_upscale_status(setup):
+    engine, _, responses, _, tid, _ = setup
+    delivery, _ = await connect_delivery(setup)
+    responses.append((200, video()))
+    await engine.deliver_due()
+    query = Queries(engine.db, engine.config)
+    await engine.db.execute(
+        lambda c: c.execute(
+            "INSERT INTO artifacts(artifact_id,task_id,source_url,required,target_path,state) "
+            "VALUES('second',?,'https://example.invalid/frame',1,'C:/synthetic-second','pending')",
+            (tid,),
+        )
+    )
+    pending = await query.get(tid)
+    assert pending["display_stage"] == pending["stage"]
+    assert "ARTIFACT_SET_UNVERIFIED" in pending["actionable_reasons"]
+    await engine.db.execute(
+        lambda c: c.execute("UPDATE artifacts SET state='ready' WHERE artifact_id='second'")
+    )
+    both = await query.get(tid)
+    assert both["display_stage"] == "downloaded_unverified"
+    await engine.db.execute(
+        lambda c: c.execute("UPDATE tasks SET kind='upscale' WHERE task_id=?", (tid,))
+    )
+    assert (await query.get(tid))["display_stage"] == "downloaded_unverified"
+    await engine.db.execute(lambda c: c.execute("DELETE FROM artifacts WHERE task_id=?", (tid,)))
+    empty = await query.get(tid)
+    assert empty["artifact_set_status"] == "unverified" and empty["artifact_counts"] == {}
+    assert empty["display_stage"] == empty["stage"]
 
 
 @pytest.mark.parametrize(

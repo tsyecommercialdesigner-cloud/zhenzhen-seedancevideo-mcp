@@ -585,7 +585,7 @@ wheels = [
 
 [[package]]
 name = "zhenzhen-seedancevideo-mcp"
-version = "0.1.0.dev2"
+version = "0.1.0.dev3"
 source = { editable = "." }
 dependencies = [
     { name = "httpx2" },

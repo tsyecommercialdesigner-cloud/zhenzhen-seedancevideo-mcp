@@ -80,7 +80,7 @@ class Configuration:
     limits: Mapping[str, int | None]
     sources: Mapping[str, str]
     explicit: frozenset[str]
-    execution_mode: str = "local"
+    execution_mode: str = "provider"
 
     @property
     def state_dir(self) -> Path:
@@ -227,7 +227,7 @@ def _parse_configuration(root, values, sources) -> Configuration:
     if any(c.isspace() for c in values["API_KEY"]):
         raise ConfigurationError("API_KEY", "whitespace is not allowed")
 
-    mode = values.get("EXECUTION_MODE", "local")
+    mode = values.get("EXECUTION_MODE", "provider")
     if mode not in {"local", "provider"}:
         raise ConfigurationError("EXECUTION_MODE", "requires local or provider")
 

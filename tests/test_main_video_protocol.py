@@ -38,6 +38,8 @@ async def wait_state(session, tid, predicate):
 async def delivered(session, tid, target, *, workspace=None):
     row = await wait_state(session, tid, lambda r: r["delivery"] == "partial")
     assert row["remote_state"] == "succeeded" and row["artifact_set_status"] == "unverified"
+    assert row["display_stage"] == "downloaded_unverified"
+    assert row["advisory_reasons"] == ["ARTIFACT_SET_UNVERIFIED"]
     assert "ARTIFACT_SET_UNVERIFIED" in row["attention"]
     assert row["charge"]["state"] == "not_returned"
     assert not row["generation_slot_held"] and row["cleanup_state"] != "pending"

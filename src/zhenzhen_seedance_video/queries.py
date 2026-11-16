@@ -9,7 +9,18 @@ import secrets
 import time
 
 from .artifact_manifest import completeness
+from .error_codes import PublicInputError
 from .task_state import StateError, _load, _public
+
+# The same predicate drives snapshots, pagination and counts within a DB transaction.
+DOWNLOADED_UNVERIFIED = """tasks.remote_state='succeeded'
+    AND EXISTS (SELECT 1 FROM artifacts a WHERE a.task_id=tasks.task_id)
+    AND NOT EXISTS (SELECT 1 FROM artifacts a WHERE a.task_id=tasks.task_id AND a.state!='ready')
+    AND COALESCE((SELECT json_extract(e.details,'$.complete') FROM task_events e
+        WHERE e.task_id=tasks.task_id AND e.kind='artifact_manifest_registered'
+        ORDER BY e.event_id DESC LIMIT 1),1)=0"""
+ACTIONABLE = f"""EXISTS (SELECT 1 FROM json_each(tasks.attention) reason
+    WHERE reason.value!='ARTIFACT_SET_UNVERIFIED' OR NOT ({DOWNLOADED_UNVERIFIED}))"""
 
 
 class Queries:
@@ -60,12 +71,30 @@ class Queries:
                 )
             },
         )
+        counts = value["artifact_counts"]
+        downloaded = (
+            row["remote_state"] == "succeeded"
+            and value["artifact_set_status"] == "unverified"
+            and bool(counts)
+            and set(counts) == {"ready"}
+        )
+        value["display_stage"] = "downloaded_unverified" if downloaded else row["stage"]
+        value["advisory_reasons"] = [
+            reason
+            for reason in value["attention"]
+            if downloaded and reason == "ARTIFACT_SET_UNVERIFIED"
+        ]
+        value["actionable_reasons"] = [
+            reason for reason in value["attention"] if reason not in value["advisory_reasons"]
+        ]
         actions = ["get_task", "wait_task", "list_artifacts"]
         if row["remote_state"] == "not_submitted" and not row["locally_cancelled"]:
             actions += ["cancel_task", "repair_task_materials"]
         if row["remote_id"]:
             actions += ["refresh_task", "resume_task_tracking"]
-        if row["delivery"] in ("pending", "partial", "missing", "changed"):
+        if downloaded:
+            actions += ["verify_artifact", "copy_artifact"]
+        if not downloaded and row["delivery"] in ("pending", "partial", "missing", "changed"):
             actions.append("retry_task_download")
         if row["cleanup_state"] == "failed":
             actions.append("retry_material_cleanup")
@@ -111,6 +140,38 @@ class Queries:
     async def get(self, task_id):
         return await self.db.execute(lambda c: self.snapshot(c, _load(c, task_id)), write=False)
 
+    async def find(self, request_key):
+        def read(c):
+            row = c.execute("SELECT * FROM tasks WHERE request_key=?", (request_key,)).fetchone()
+            if row is None:
+                receiving = c.execute(
+                    "SELECT 1 FROM admissions WHERE request_key=?", (request_key,)
+                ).fetchone()
+                return {
+                    "accepted": False,
+                    "request_key": request_key,
+                    "status": "receiving" if receiving else "not_found",
+                    "stale": self.db.storage_fault,
+                }
+            row = dict(row)
+            event = c.execute(
+                "SELECT details FROM task_events WHERE task_id=? AND kind='accepted'",
+                (row["task_id"],),
+            ).fetchone()
+            if event is None:
+                raise PublicInputError("ADMISSION_SNAPSHOT_UNAVAILABLE")
+            details = json.loads(event[0])
+            return self.snapshot(c, row) | {
+                "accepted": True,
+                "request_key": request_key,
+                "authorization": details["authorization"],
+                "unverified": details["unverified"],
+                "output_dir": row["output_dir"],
+                "materials": details.get("materials", []),
+            }
+
+        return await self.db.execute(read, write=False)
+
     def cursor(self, sequence, filters):
         payload = json.dumps([sequence, filters], separators=(",", ":"), sort_keys=True)
         return (
@@ -125,27 +186,31 @@ class Queries:
         remote_state=None,
         attention_reason=None,
         needs_attention=False,
+        actionable_only=False,
     ):
         limit = self.config.limits["PAGE_DEFAULT_SIZE"] if limit is None else limit
         if type(limit) is not int or not 1 <= limit <= self.config.limits["PAGE_MAX_SIZE"]:
-            raise ValueError("INVALID_PAGE_SIZE")
+            raise PublicInputError("INVALID_PAGE_SIZE")
         filters = [remote_state, attention_reason, needs_attention]
+        if actionable_only:
+            filters.append(True)
         sequence = 0
         if cursor is not None:
             if not isinstance(cursor, str) or len(cursor) > 100:
-                raise ValueError("INVALID_CURSOR")
+                raise PublicInputError("INVALID_CURSOR")
             try:
                 sequence = int(cursor.split(".")[0])
                 if sequence < 0 or not hmac.compare_digest(cursor, self.cursor(sequence, filters)):
                     raise ValueError()
             except (ValueError, IndexError):
-                raise ValueError("INVALID_CURSOR") from None
+                raise PublicInputError("INVALID_CURSOR") from None
 
         def read(c):
             rows = c.execute(
-                """SELECT * FROM tasks WHERE sequence>? AND (? IS NULL OR remote_state=?)
+                f"""SELECT * FROM tasks WHERE sequence>? AND (? IS NULL OR remote_state=?)
                 AND (?=0 OR attention!='[]') AND (? IS NULL OR EXISTS
                 (SELECT 1 FROM json_each(tasks.attention) WHERE value=?))
+                AND (?=0 OR ({ACTIONABLE}))
                 ORDER BY sequence LIMIT ?""",
                 (
                     sequence,
@@ -154,6 +219,7 @@ class Queries:
                     needs_attention,
                     attention_reason,
                     attention_reason,
+                    actionable_only,
                     limit + 1,
                 ),
             ).fetchall()
@@ -190,7 +256,7 @@ class Queries:
             or not math.isfinite(timeout_seconds)
             or not 0 <= timeout_seconds <= self.config.limits["WAIT_MAX_SECONDS"]
         ):
-            raise ValueError("INVALID_WAIT")
+            raise PublicInputError("INVALID_WAIT")
         deadline = time.monotonic() + timeout_seconds
         while True:
             result = await self.get(task_id)

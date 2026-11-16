@@ -57,7 +57,7 @@ class MaterialReaders:
         if readers:
             _, pending = await asyncio.wait(readers, timeout=wait_seconds)
             if pending:
-                raise RuntimeError("MATERIAL_READERS_BUSY")
+                raise MaterialReadError("MATERIAL_READERS_BUSY")
             await asyncio.gather(*readers, return_exceptions=True)
 
     @staticmethod

@@ -2,16 +2,25 @@
 
 import json
 import os
-import re
 from datetime import UTC, datetime
 
-from .admission import authorize, local_inputs
-from .diagnostics import safe_record
+from .admission import AdmissionError, authorize, local_inputs
+from .artifact_files import ArtifactError
+from .diagnostics import CATALOG, safe_record
+from .error_codes import PUBLIC_ERROR_CODES, PublicInputError, PublicOperationError
+from .material_readers import MaterialReadError
+from .materials import MaterialError
+from .network import NetworkError
+from .ownership import OwnershipError
 from .parameters import ParameterError, request_model
 from .preflight import capabilities, preflight
-from .queries import Queries
+from .provider import ProviderFailure
+from .provider_response import ResponseError
+from .queries import ACTIONABLE, Queries
 from .storage import StorageError
 from .task_state import StateError, TaskState
+from .uploads import UploadError
+from .windows_security import SecurityError
 
 READ_ONLY = {
     "get_service_status",
@@ -23,6 +32,19 @@ READ_ONLY = {
     "wait_task",
     "get_prompt_optimization_policy",
     "get_diagnostic",
+}
+
+TOOL_STAGES = {
+    "submit_video": "admission",
+    "upscale_video": "admission",
+    "preflight_video_task": "validate",
+    "repair_task_materials": "admission",
+    "retry_material_cleanup": "cleanup",
+    "retry_task_download": "download",
+    "list_artifacts": "download",
+    "verify_artifact": "download",
+    "copy_artifact": "download",
+    "retry_unsubmitted_task": "submit",
 }
 
 
@@ -44,6 +66,9 @@ class Tools:
                 0
             ]
             count = c.execute("SELECT count(*) FROM tasks WHERE attention!='[]'").fetchone()[0]
+            actionable_count = c.execute(
+                f"SELECT count(*) FROM tasks WHERE {ACTIONABLE}"
+            ).fetchone()[0]
             jobs = {
                 r[0]: r[1]
                 for r in c.execute("SELECT state,count(*) FROM cleanup_jobs GROUP BY state")
@@ -69,6 +94,7 @@ class Tools:
                 "storage_fault": self.db.storage_fault,
                 "stale": self.db.storage_fault,
                 "attention_count": count,
+                "actionable_attention_count": actionable_count,
                 "attention_tool": "list_tasks",
                 "cleanup": jobs,
             }
@@ -137,7 +163,7 @@ class Tools:
 
     async def find_task_by_request_key(self, request_key: str) -> dict:
         """响应丢失后按原请求标识只读找回，不重新生成。"""
-        return await self.admission.find(request_key) | {"stale": self.db.storage_fault}
+        return await self.queries.find(request_key)
 
     async def get_task(self, task_id: str) -> dict:
         """读取一致本地状态与有效参数摘要，不访问上游。"""
@@ -150,6 +176,7 @@ class Tools:
         remote_state: str | None = None,
         attention_reason: str | None = None,
         needs_attention: bool = False,
+        actionable_only: bool = False,
     ) -> dict:
         """稳定游标分页；异常非消费式；不承诺跨页快照。"""
         return await self.queries.list(
@@ -158,6 +185,7 @@ class Tools:
             remote_state=remote_state,
             attention_reason=attention_reason,
             needs_attention=needs_attention,
+            actionable_only=actionable_only,
         )
 
     async def wait_task(
@@ -228,7 +256,7 @@ class Tools:
     async def list_artifacts(self, task_id: str, after: str = "", limit: int = 20) -> dict:
         """分页返回产物绝对路径与摘要，不传输视频或签名 URL。"""
         if type(limit) is not int or not 1 <= limit <= self.config.limits["PAGE_MAX_SIZE"]:
-            raise ValueError("INVALID_PAGE_SIZE")
+            raise PublicInputError("INVALID_PAGE_SIZE")
         result = await self.artifacts.list(task_id, after=after, limit=min(limit, 100))
         while (
             len(json.dumps(result, ensure_ascii=False).encode())
@@ -304,15 +332,48 @@ class Tools:
                     } | {"truncated": True, "error": "RESPONSE_TOO_LARGE"}
                 return result
             except Exception as error:
-                code = getattr(error, "code", str(error))
-                if not re.fullmatch(r"[A-Z][A-Z0-9_]{0,100}", code):
-                    code = (
-                        "INVALID_TOOL_INPUT"
-                        if isinstance(error, (TypeError, ValueError))
-                        else "INTERNAL_ERROR"
-                    )
-                details = {"field": error.field_name} if isinstance(error, ParameterError) else None
-                stage = "validate" if isinstance(error, ParameterError) else "query"
+                trusted = type(error) in {
+                    AdmissionError,
+                    ArtifactError,
+                    MaterialError,
+                    MaterialReadError,
+                    NetworkError,
+                    OwnershipError,
+                    ParameterError,
+                    ProviderFailure,
+                    ResponseError,
+                    PublicInputError,
+                    PublicOperationError,
+                    StateError,
+                    StorageError,
+                    UploadError,
+                    SecurityError,
+                }
+                code = "INTERNAL_ERROR"
+                if trusted:
+                    try:
+                        candidate = getattr(error, "code", None)
+                        if candidate is None:
+                            candidate = str(error)
+                        if isinstance(candidate, str) and candidate in (
+                            PUBLIC_ERROR_CODES | CATALOG.keys()
+                        ):
+                            code = candidate
+                    except Exception:
+                        pass
+                details = None
+                if type(error) is ParameterError:
+                    try:
+                        details = {"field": error.field_name}
+                    except Exception:
+                        code = "INTERNAL_ERROR"
+                stage = (
+                    "validate"
+                    if type(error) is ParameterError or code == "PROMPT_AUTHORIZATION_REQUIRED"
+                    else "storage"
+                    if code == "STORAGE_FAULT" or type(error) is StorageError
+                    else TOOL_STAGES.get(function.__name__, "query")
+                )
                 record = (
                     self.diagnostics.record(
                         code, stage, task_id=params.get("task_id"), details=details
@@ -321,8 +382,13 @@ class Tools:
                     else safe_record(code, stage, task_id=params.get("task_id"), details=details)
                 )
                 result = {"ok": False, "error": code, "diagnostic": record}
-                if isinstance(error, StateError) and error.snapshot:
-                    result["task"] = error.snapshot
+                if type(error) is StateError and code != "INTERNAL_ERROR":
+                    try:
+                        snapshot = error.snapshot
+                    except Exception:
+                        snapshot = None
+                    if snapshot:
+                        result["task"] = snapshot
                 return result
 
         return call
