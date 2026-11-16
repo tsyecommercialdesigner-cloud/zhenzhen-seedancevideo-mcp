@@ -829,6 +829,46 @@
     "cleanup": "verified exact root and 325 in-scope symbolic links; unlinked then removed test/build root; preserved existing paid state and videos"
   },
   {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\ci-manual-review-20261114",
+    "purpose": "manual-only gate pre-merge isolated verification",
+    "version": "unreleased manual backfill CI fix",
+    "task": "manual-only CI pre-merge review",
+    "owner": "Agent",
+    "status": "removed; 15 isolated tests passed; root absent",
+    "release_condition": "2026-11-14 local checks recorded; remote PR verification pending",
+    "cleanup": "verified process exit and exact root; unlinked 15 in-root symbolic links and removed task-owned test data"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\ci-manual-relation-20261114",
+    "purpose": "isolated Git histories for manual-only workflow and release ancestry checks",
+    "version": "unreleased CI correction",
+    "task": "manual-only release ancestry fix",
+    "owner": "Agent",
+    "status": "removed; 15 isolated tests passed and test root absent",
+    "release_condition": "2026-11-14 local validation recorded; remote CI not triggered",
+    "cleanup": "verified exact root and process exit, unlinked 15 in-root symbolic links and removed task-owned test data"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\ci-gate-20261114",
+    "purpose": "isolated CI gate classification and provenance tests",
+    "version": "unreleased CI gate implementation",
+    "task": "CI evidence and release backfill",
+    "owner": "Agent",
+    "status": "removed; local gate and full-suite results recorded; related processes and root absent",
+    "release_condition": "2026-11-14 local verification completed; remote CI verification pending",
+    "cleanup": "verified root and processes, unlinked 457 in-root symbolic links, removed isolated tests, synthetic evidence and builds"
+  },
+  {
+    "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\ci-evidence-20261114",
+    "purpose": "isolated CI provenance test and temporary git repository",
+    "version": "unreleased CI evidence work",
+    "task": "CI evidence and release backfill",
+    "owner": "Agent",
+    "status": "removed; isolated provenance test recorded; root absent",
+    "release_condition": "2026-11-14 partial validation recorded; CI implementation remains unfinished",
+    "cleanup": "verified and unlinked one in-root symbolic link, then removed temporary git repositories and synthetic evidence"
+  },
+  {
     "path": "E:\\mcp-server-workspace\\zhenzhen-seedancevideo-mcp\\.cache\\release-dev1-candidate",
     "purpose": "CI candidate download and release notes for v0.1.0.dev1",
     "version": "v0.1.0.dev1; release commit a1af92b7a021f27e7a1f3115f7ae015d74ba7be6",
