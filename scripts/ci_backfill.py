@@ -336,7 +336,19 @@ def trusted_run(repository, base, expected, exact_tree=None):
                 check=True,
                 capture_output=True,
             )
-            evidence = json.loads((Path(tmp) / "VERIFICATION_EVIDENCE.json").read_text())
+            try:
+                evidence = json.loads(
+                    (Path(tmp) / "VERIFICATION_EVIDENCE.json").read_text(encoding="utf-8-sig")
+                )
+            except (OSError, ValueError):
+                # A later reused-build artifact need not contain full-run evidence.
+                continue
+        if (
+            not isinstance(evidence, dict)
+            or not isinstance(evidence.get("source_commit"), str)
+            or not re.fullmatch(r"[0-9a-f]{40}", evidence["source_commit"])
+        ):
+            continue
         if exact_tree is not None and evidence.get("source_tree") != exact_tree:
             continue
         source = gh_json(f"repos/{repository}/git/commits/{evidence['source_commit']}")

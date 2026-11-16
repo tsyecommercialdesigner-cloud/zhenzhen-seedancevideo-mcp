@@ -2,13 +2,14 @@
 
 import hashlib
 import importlib.util
+import sys
 from pathlib import Path
 
 import pytest
 
-spec = importlib.util.spec_from_file_location(
-    "release_control", Path(__file__).resolve().parents[1] / "scripts/release_control.py"
-)
+scripts = Path(__file__).resolve().parents[1] / "scripts"
+sys.path.insert(0, str(scripts))
+spec = importlib.util.spec_from_file_location("release_control", scripts / "release_control.py")
 release = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release)
 
@@ -172,10 +173,129 @@ def test_reused_evidence_requires_equal_runtime_and_inputs():
     candidate = dict.fromkeys(keys, "same")
     previous = {**candidate, "scope": "full-windows-lint-format-tests-build"}
     release.validate_reused(candidate, previous)
+    release.validate_reused(candidate, {**previous, "source_tree": "different-tree"})
     with pytest.raises(ValueError, match="differs"):
         release.validate_reused(candidate, {**previous, "image_version": "changed"})
     with pytest.raises(ValueError, match="differs"):
         release.validate_reused(candidate, {**previous, "scope": "candidate-build-reused-checks"})
+
+
+@pytest.mark.parametrize(
+    ("changed", "previous_fingerprint", "valid"),
+    [
+        (b"README.md\0", "same", True),
+        (b"docs/test-resource-register.json\0", "same", True),
+        (b"MANUAL.md\0", "same", False),
+        (b"README.md\0src/server.py\0", "same", False),
+        (b"README.md\0", "tampered", False),
+    ],
+)
+def test_candidate_fact_backfill_rechecks_git_inputs(
+    tmp_path, monkeypatch, changed, previous_fingerprint, valid
+):
+    repo, head, old_head = "example/repo", "a" * 40, "b" * 40
+    candidate_sha, previous_sha, candidate_tree, previous_tree = (
+        "c" * 40,
+        "d" * 40,
+        "e" * 40,
+        "f" * 40,
+    )
+    shared = dict.fromkeys(
+        (
+            "schema",
+            "excluded_passive_fact_files",
+            "python",
+            "uv",
+            "git",
+            "gh",
+            "runner_os",
+            "runner_arch",
+            "image_os",
+            "image_version",
+        ),
+        "same",
+    )
+    shared.update(
+        repository=repo,
+        operational_inputs_sha256="same",
+        event="pull_request",
+        run_attempt="1",
+        workflow_ref=f"{repo}/.github/workflows/pr-checks.yml@refs/pull/1/merge",
+    )
+    candidate = {
+        **shared,
+        "source_commit": candidate_sha,
+        "source_tree": candidate_tree,
+        "run_id": "2",
+        "scope": "candidate-build-reused-checks",
+        "reused_run_id": "1",
+    }
+    previous = {
+        **shared,
+        "source_commit": previous_sha,
+        "source_tree": previous_tree,
+        "run_id": "1",
+        "scope": "full-windows-lint-format-tests-build",
+    }
+    (tmp_path / "CANDIDATE_EVIDENCE.json").write_text(
+        release.json.dumps(candidate), encoding="utf-8"
+    )
+    previous_run = {
+        "conclusion": "success",
+        "event": "pull_request",
+        "run_attempt": 1,
+        "head_sha": old_head,
+        "path": ".github/workflows/pr-checks.yml",
+        "head_repository": {"full_name": repo},
+    }
+
+    def api(endpoint):
+        if endpoint.endswith(candidate_sha):
+            return {"tree": {"sha": candidate_tree}, "parents": [{"sha": head}]}
+        if endpoint.endswith(previous_sha):
+            return {"tree": {"sha": previous_tree}, "parents": [{"sha": old_head}]}
+        if endpoint.endswith("/actions/runs/1"):
+            return previous_run
+        if endpoint.endswith("/artifacts?per_page=100"):
+            return {"artifacts": [{"name": "windows-candidate-1", "expired": False}]}
+        if endpoint.endswith("/pulls"):
+            return [
+                {
+                    "merged_at": "yes",
+                    "merge_commit_sha": "9" * 40,
+                    "base": {"ref": "dev"},
+                    "head": {"sha": old_head, "repo": {"full_name": repo}},
+                }
+            ]
+        pytest.fail(f"unexpected API endpoint {endpoint}")
+
+    def download(repo, run_id, folder):
+        (folder / "VERIFICATION_EVIDENCE.json").write_text(
+            release.json.dumps(previous), encoding="utf-8"
+        )
+
+    monkeypatch.setattr(release, "api", api)
+    monkeypatch.setattr(release, "download_run", download)
+    monkeypatch.setattr(
+        release.subprocess,
+        "run",
+        lambda *args, **kwargs: release.subprocess.CompletedProcess(args, 0),
+    )
+    monkeypatch.setattr(release.subprocess, "check_output", lambda *args, **kwargs: changed)
+    monkeypatch.setattr(
+        release,
+        "input_fingerprint",
+        lambda rev: previous_fingerprint if rev == previous_sha else "same",
+    )
+    monkeypatch.setattr(release, "verify_assets", lambda *args: {"current-package": "digest"})
+    run = {"head_sha": head, "run_attempt": 1}
+    if valid:
+        assert release.verify_candidate(
+            repo, "2", run, "reused", tmp_path, candidate_tree, "1"
+        ) == {"current-package": "digest"}
+    else:
+        with pytest.raises(ValueError):
+            release.verify_candidate(repo, "2", run, "reused", tmp_path, candidate_tree, "1")
 
 
 def test_prepare_rebuilds_only_if_artifact_expired(tmp_path, monkeypatch):

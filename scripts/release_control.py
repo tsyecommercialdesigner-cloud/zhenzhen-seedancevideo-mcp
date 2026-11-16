@@ -10,6 +10,8 @@ import tempfile
 import tomllib
 from pathlib import Path
 
+from ci_evidence import input_fingerprint
+
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 
 
@@ -134,7 +136,6 @@ def validate_reused(candidate, previous):
     """Require the same full check inputs and runtime as the earlier evidence."""
     keys = (
         "schema",
-        "source_tree",
         "operational_inputs_sha256",
         "excluded_passive_fact_files",
         "repository",
@@ -235,7 +236,10 @@ def verify_candidate(repo, run_id, run_data, scope, folder, tree, version):
         if not SHA.fullmatch(previous_sha):
             raise ValueError("Invalid reused source commit")
         previous_source = api(f"repos/{repo}/git/commits/{previous_sha}")
-        validate_source(previous_run, previous_source, tree, previous, "full", reused_id)
+        previous_tree = previous.get("source_tree", "")
+        if not isinstance(previous_tree, str) or not SHA.fullmatch(previous_tree):
+            raise ValueError("Invalid reused source tree")
+        validate_source(previous_run, previous_source, previous_tree, previous, "full", reused_id)
         pulls = api(f"repos/{repo}/commits/{previous_run['head_sha']}/pulls")
         ancestry = [
             p
@@ -256,6 +260,26 @@ def verify_candidate(repo, run_id, run_data, scope, folder, tree, version):
             for p in ancestry
         ):
             raise ValueError("Reused PR is not in main history")
+        subprocess.run(
+            ["git", "fetch", "--no-tags", "origin", previous_sha],
+            check=True,
+            capture_output=True,
+        )
+        candidate_inputs = input_fingerprint("HEAD")
+        if (
+            input_fingerprint(previous_sha) != candidate_inputs
+            or evidence.get("operational_inputs_sha256") != candidate_inputs
+            or previous.get("operational_inputs_sha256") != candidate_inputs
+        ):
+            raise ValueError("Reused operational inputs do not match Git objects")
+        changed = subprocess.check_output(
+            ["git", "diff", "--name-only", "--no-renames", "-z", previous_sha, "HEAD"]
+        ).split(b"\0")
+        if any(
+            name and name not in {b"README.md", b"docs/test-resource-register.json"}
+            for name in changed
+        ):
+            raise ValueError("Reused trees differ outside allowed fact files")
     return verify_assets(folder, version)
 
 

@@ -957,5 +957,15 @@
     "status": "removed; dedicated paths absent after rescan",
     "release_condition": "test results recorded in verification log",
     "cleanup": "verified test symlinks and targets within each root, unlinked them and removed exact roots; temporary installation environments removed by context managers"
+  },
+  {
+    "path": ".cache/ci-reuse-fix-20261116; .cache/ci-reuse-regression-20261116; .cache/ci-reuse-final-20261116; .cache/ci-reuse-review-20261116",
+    "purpose": "read-only CI evidence inspection and isolated reuse regression",
+    "version": "unreleased reuse correction after PR 17",
+    "task": "CI reuse verification repair",
+    "owner": "Agent",
+    "status": "removed; dedicated paths absent after rescan",
+    "release_condition": "results recorded in verification log",
+    "cleanup": "verified links and targets within each root before unlinking; removed exact test and evidence roots"
   }
 ]
