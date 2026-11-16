@@ -37,6 +37,58 @@ def test_run_identity_requires_actual_merged_main_candidate():
         release.validate_run({**run, "conclusion": "failure"}, [pr], repo, sha)
 
 
+def test_candidate_looks_up_main_merge_not_dev_head(monkeypatch):
+    main_sha, head, repo = "a" * 40, "b" * 40, "example/repo"
+    run = {
+        "status": "completed",
+        "conclusion": "success",
+        "event": "pull_request",
+        "path": ".github/workflows/pr-checks.yml",
+        "head_repository": {"full_name": repo},
+        "run_attempt": 1,
+        "head_sha": head,
+    }
+    pr = {
+        "merged_at": "2026-01-01",
+        "merge_commit_sha": main_sha,
+        "base": {"ref": "main"},
+        "head": {"sha": head, "repo": {"full_name": repo}},
+    }
+    seen = []
+
+    def api(endpoint):
+        seen.append(endpoint)
+        if endpoint.endswith("/actions/runs/123"):
+            return run
+        if endpoint.endswith(f"/commits/{main_sha}/pulls"):
+            return [pr]
+        if "/jobs?" in endpoint:
+            return {
+                "jobs": [
+                    {
+                        "name": "windows",
+                        "conclusion": "success",
+                        "steps": [
+                            {"name": name, "conclusion": "success"}
+                            for name in (
+                                "Build packages",
+                                "Record candidate identity and checksums",
+                                "Check lint and formatting",
+                                "Run isolated tests",
+                            )
+                        ],
+                    }
+                ]
+            }
+        if "/artifacts?" in endpoint:
+            return {"artifacts": [{"name": "windows-candidate-123", "expired": False}]}
+        pytest.fail(f"Unexpected API endpoint: {endpoint}")
+
+    monkeypatch.setattr(release, "api", api)
+    assert release.candidate_run(repo, "123", main_sha) == (run, "full", True)
+    assert any(f"/commits/{main_sha}/pulls" in endpoint for endpoint in seen)
+
+
 def test_release_assets_are_exact_and_verified(tmp_path):
     names = [
         "zhenzhen_seedancevideo_mcp-0.1.0.dev1.tar.gz",

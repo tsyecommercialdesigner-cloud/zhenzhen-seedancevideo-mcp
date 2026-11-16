@@ -166,7 +166,9 @@ def candidate_run(repo, run_id, main_sha):
     data = api(f"repos/{repo}/actions/runs/{run_id}")
     if not SHA.fullmatch(data.get("head_sha", "")):
         raise ValueError("Invalid candidate head SHA")
-    pulls = api(f"repos/{repo}/commits/{data['head_sha']}/pulls")
+    # A dev head can itself be the merge commit of a feature PR; querying
+    # that head returns the feature PR, not necessarily the main release PR.
+    pulls = api(f"repos/{repo}/commits/{main_sha}/pulls")
     validate_run(data, pulls, repo, main_sha)
     attempt = data["run_attempt"]
     jobs = api(f"repos/{repo}/actions/runs/{run_id}/attempts/{attempt}/jobs?per_page=100")
