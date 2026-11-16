@@ -138,6 +138,10 @@ def capabilities(*, api_id=None, model_id=None):
             seed={"type": "number", "range_and_default": "unverified"},
             last_frame_support="unverified",
             enhance_prompt="authorization_required_for_true",
+            enhance_prompt_default_scope=(
+                "initial preference is false; omitted value follows shared authorization or "
+                "allow_once; explicit false takes precedence"
+            ),
         )
         if model.kind == "i2v":
             result["media"] = {

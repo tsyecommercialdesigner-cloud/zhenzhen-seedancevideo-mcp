@@ -7,6 +7,7 @@ from typing import Any
 from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
 
+from .request_schema import VideoRequest
 from .runtime import connect_or_start
 from .tools import READ_ONLY
 
@@ -80,7 +81,7 @@ def create_server(connect=connect_or_start):
 
     @tool("preflight_video_task")
     async def preflight_video_task(
-        request: dict, api_id: str = "seedance-video", allow_once: bool = False
+        request: VideoRequest, api_id: str = "seedance-video", allow_once: bool = False
     ) -> dict[str, Any]:
         """无上传、无接收副作用的参数与授权预检；不保证随后接收成功。"""
         return await client.call(
@@ -91,7 +92,7 @@ def create_server(connect=connect_or_start):
 
     @tool("submit_video")
     async def submit_video(
-        request_key: str, request: dict, allow_once: bool = False
+        request_key: str, request: VideoRequest, allow_once: bool = False
     ) -> dict[str, Any]:
         """正式接收即授权自动执行；allow_once 仅用于本次用户已同意优化。"""
         return await client.call(
@@ -101,7 +102,7 @@ def create_server(connect=connect_or_start):
         )
 
     @tool("upscale_video")
-    async def upscale_video(request_key: str, request: dict) -> dict[str, Any]:
+    async def upscale_video(request_key: str, request: VideoRequest) -> dict[str, Any]:
         """独立超分任务，不自动串联生成任务。"""
         return await client.call(
             "upscale_video", {"request_key": request_key, "request": request}, wait_seconds=120

@@ -19,7 +19,39 @@ CATALOG = {
     "STORAGE_FAULT": ("本地持久化异常，自动执行已受保护", False, ("get_service_status",)),
     "INTERNAL_ERROR": ("本地操作异常，请按诊断标识核查", False, ("get_service_status",)),
 }
-STAGES = frozenset({"startup", "admission", "submit", "query", "download", "cleanup", "storage"})
+PARAMETER_CODES = frozenset(
+    "AUTO_DURATION_REQUIRES_MINUS_ONE BOOLEAN_REQUIRED CANONICAL_CONTENT_REQUIRED "
+    "DRAFT_NOT_ELIGIBLE DURATION_CONFLICT EDIT_AUTO_DURATION_REQUIRED FIELD_NOT_APPLICABLE "
+    "FINITE_NUMBER_REQUIRED IMAGE_SIZE_EXCEEDED INVALID_CHOICE INVALID_DURATION "
+    "INVALID_IMAGE_FORMAT INVALID_JSON_VALUE INVALID_MEDIA_ENTRY INVALID_REFERENCE_DURATION "
+    "MODEL_NOT_SUPPORTED NONEMPTY_CONTENT_REQUIRED OBJECT_REQUIRED ONE_OR_TWO_IMAGES_REQUIRED "
+    "ONE_VIDEO_REQUIRED REFERENCE_TOTAL_DURATION_EXCEEDED REFERENCE_VIDEO_AND_ADAPTIVE_REQUIRED "
+    "REQUIRED TOO_MANY_MEDIA TYPE_MISMATCH UNKNOWN_OR_INAPPLICABLE_FIELD URL_REQUIRED "
+    "MP4_REQUIRED".split()
+)
+CATALOG.update(
+    {
+        code: ("请求参数无效，请按字段提示修正", False, ("get_capabilities",))
+        for code in PARAMETER_CODES
+    }
+)
+SAFE_FIELDS = frozenset(
+    "request model model_id prompt seconds images metadata metadata.resolution metadata.ratio "
+    "metadata.generate_audio metadata.duration metadata.seed metadata.return_last_frame "
+    "metadata.draft metadata.draft_task_id metadata.output_format metadata.content "
+    "metadata.omni_reference_task_type enhance_prompt ratio resolution generate_audio "
+    "duration".split()
+)
+SUGGESTIONS = {
+    "model_id": "model",
+    "ratio": "metadata.ratio",
+    "resolution": "metadata.resolution",
+    "generate_audio": "metadata.generate_audio",
+    "duration": "metadata.duration",
+}
+STAGES = frozenset(
+    {"startup", "admission", "submit", "query", "validate", "download", "cleanup", "storage"}
+)
 STATES = frozenset({"queued", "in_progress", "completed", "failed"})
 
 
@@ -49,6 +81,17 @@ def safe_record(code, stage, *, task_id=None, details=None, secrets=(), summary_
         "details": {},
     }
     if isinstance(details, dict):
+        field = details.get("field")
+        if code in PARAMETER_CODES and isinstance(field, str) and field in SAFE_FIELDS:
+            record["details"]["field"] = field
+            if code == "UNKNOWN_OR_INAPPLICABLE_FIELD" and field in SUGGESTIONS:
+                record["details"]["did_you_mean"] = SUGGESTIONS[field]
+            if code == "TYPE_MISMATCH" and field in {"model", "prompt"}:
+                record["details"]["expected"] = "string"
+            if code in {"TYPE_MISMATCH", "INVALID_DURATION"} and field == "seconds":
+                record["details"]["expected"] = "integer string; model limits apply"
+            if code == "BOOLEAN_REQUIRED":
+                record["details"]["expected"] = "boolean"
         for key in ("attempt", "http_status"):
             value = details.get(key)
             if type(value) is int and 0 <= value <= 2147483647:

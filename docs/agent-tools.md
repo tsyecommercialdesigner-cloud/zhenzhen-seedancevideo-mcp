@@ -1,7 +1,7 @@
 # Agent 工具使用手册
 
 适用版本：0.1.0.dev1，MCP SDK 2.3.0，Windows。
-当前发行入口已接通供应商适配器，默认 execution_mode=local 不执行供应商请求，显式配置 provider 并重启才启用。实际 Host 工具发现及 Codex／DSH 跨 Host 主视频交付已有分范围证据，详见[验证记录](verification-add-local-video-generation-service.md)；不能把这些证据推广为全部模型、Host 或完整产物集合均已验收。
+当前发行入口已接通供应商适配器，默认 `execution_mode=local` **不能生成视频**，显式配置 `provider` 并重启共享后端才启用新任务执行；具体步骤和旧任务限制见[成员手册](../MANUAL.md#启用供应商生成)。实际 Host 工具发现及 Codex／DSH 跨 Host 主视频交付已有分范围证据，详见[验证记录](verification-add-local-video-generation-service.md)；不能把这些证据推广为全部模型、Host 或完整产物集合均已验收。
 
 ## 启动与配置
 
@@ -34,6 +34,10 @@
 1. `get_service_status({})` 区分本地状态、额度、存储故障和供应商状态。`generation_execution=not_implemented` 表示当前未启用供应商执行；检查execution_mode，provider模式下为adapter_installed。上游未知不妨碍本地查询和已有产物复制。
 2. `get_capabilities({"api_id":"seedance-video","model_id":"seedance-2.0-mini-t2v"})` 读取参数限制与待核实能力。
 3. 可选 `preflight_video_task({"request":{"model":"seedance-2.0-mini-t2v","prompt":"一只狐狸在雪地奔跑"}})`。预检不上传、不创建任务，不保证稍后接收；本地素材只检查参数形状，不冒充已经读取验证。
+
+   工具 Schema 列出请求的联合字段；按模型调用 `get_capabilities` 查看适用条件。普通生成使用 `request.model`、字符串 `request.seconds`，`ratio` 和 `resolution` 放在 `request.metadata`。例如：`{"model":"seedance-2.0-mini-t2v","prompt":"一只狐狸在雪地奔跑","seconds":"4","metadata":{"resolution":"480p","ratio":"16:9","generate_audio":false}}`。样片转成片及超分的必填字段不同，不要求普通生成的提示词。普通生成省略 `generate_audio` 时有效值为 true；预检的 `audio_source` 区分默认与显式值。
+
+   `authorization` 和 `prompt_optimization_authorization` 均仅表示提示词优化的授权决定，并非生成开关。预检不授权或创建生成任务；provider 模式的正式提交被接收后授权供应商自动执行，local 模式接收不授予切换模式后的供应商执行授权。`estimated_charge: null` 表示没有可靠估价，不代表免费，提交可能产生费用；已返回的实际费用以任务查询为准。参数拒绝可查看 `diagnostic.details` 中安全字段名及修正提示。
 4. 提示词优化授权发生在正式提交前。单次允许：提交 `allow_once=true`；总是允许：先读取 `get_prompt_optimization_policy`，再调用 `set_prompt_optimization_policy({"enabled":true,"expected_version":0,"confirmed":true})`（版本使用实际查询值）。撤销用 enabled=false。单次 request.enhance_prompt=false 优先。成片、超分不适用。已入队任务不会再弹确认。
 5. `submit_video({"request_key":"my-stable-request-001","request":{"model":"seedance-2.0-mini-t2v","prompt":"一只狐狸在雪地奔跑"}})`。保留返回的 task_id/version。响应丢失用 `find_task_by_request_key({"request_key":"my-stable-request-001"})`，不要换 key 盲目重提。receiving 不等于 accepted。
 6. `get_task({"task_id":"实际任务 ID"})` 查询本地快照。`wait_task({"task_id":"实际任务 ID","after_version":1,"timeout_seconds":20})` 等待业务版本变化；默认 20 秒，默认配置上限 30 秒。wait_timed_out=true 只表示等待结束。取消等待不取消生成。

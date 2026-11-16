@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 
 from .admission import authorize, local_inputs
 from .diagnostics import safe_record
-from .models import get_model
+from .parameters import ParameterError, request_model
 from .preflight import capabilities, preflight
 from .queries import Queries
 from .storage import StorageError
@@ -86,7 +86,7 @@ class Tools:
     ) -> dict:
         """无上传、无接收副作用的参数与授权预检；不保证随后接收成功。"""
         normalized, inputs = local_inputs(request)
-        model = get_model(normalized.get("model"), api_id=api_id)
+        model = request_model(normalized, api_id=api_id)
         policy = await self.admission.get_preference()
         authorization = authorize(normalized, policy, allow_once, model.kind)
         if model.kind not in ("upscale", "draft-to-video"):
@@ -101,6 +101,18 @@ class Tools:
         result.update(
             authorization=authorization,
             authorization_checked=True,
+            prompt_optimization_authorization=authorization,
+            authorization_scope=(
+                "prompt_optimization_only; accepted provider-mode submission authorizes "
+                "provider execution; local-mode acceptance does not"
+            ),
+            estimated_charge_status="unknown; submission may incur charges",
+            preflight_scope="local checks only; admission and provider availability not guaranteed",
+            audio_source=(
+                "explicit" if "generate_audio" in request.get("metadata", {}) else "default"
+            )
+            if model.kind not in ("draft-to-video", "upscale")
+            else "not_applicable",
             effective_summary={
                 "model": payload["model"],
                 "seconds": payload.get("seconds"),
@@ -299,10 +311,14 @@ class Tools:
                         if isinstance(error, (TypeError, ValueError))
                         else "INTERNAL_ERROR"
                     )
+                details = {"field": error.field_name} if isinstance(error, ParameterError) else None
+                stage = "validate" if isinstance(error, ParameterError) else "query"
                 record = (
-                    self.diagnostics.record(code, "query", task_id=params.get("task_id"))
+                    self.diagnostics.record(
+                        code, stage, task_id=params.get("task_id"), details=details
+                    )
                     if self.diagnostics
-                    else safe_record(code, "query", task_id=params.get("task_id"))
+                    else safe_record(code, stage, task_id=params.get("task_id"), details=details)
                 )
                 result = {"ok": False, "error": code, "diagnostic": record}
                 if isinstance(error, StateError) and error.snapshot:
